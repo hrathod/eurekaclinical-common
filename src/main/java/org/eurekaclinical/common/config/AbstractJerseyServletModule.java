@@ -19,7 +19,6 @@ package org.eurekaclinical.common.config;
  * limitations under the License.
  * #L%
  */
-
 import org.eurekaclinical.standardapis.config.ServletModuleSupport;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +38,6 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
-import org.eurekaclinical.standardapis.filter.RolesFilter;
 import org.eurekaclinical.standardapis.props.EurekaClinicalProperties;
 
 /**
@@ -72,13 +70,6 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
         for (Map.Entry<String, String> entry : inParams.entrySet()) {
             LOGGER.debug(entry.getKey() + " -> " + entry.getValue());
         }
-    }
-
-    private void setupAuthorizationFilter() {
-        bind(RolesFilter.class).in(Singleton.class);
-        Map<String, String> rolesFilterInitParams = this.servletModuleSupport
-                .getRolesFilterInitParams();
-        filter("/*").through(RolesFilter.class, rolesFilterInitParams);
     }
 
     private void setupCasProxyFilter() {
@@ -124,15 +115,18 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
         }
         serve(CONTAINER_PATH).with(GuiceContainer.class, params);
     }
+    
+    protected void setupFilters() {
+    }
 
     @Override
     protected void configureServlets() {
         super.configureServlets();
         /*
-		 * CAS filters must go before other filters.
+         * CAS filters must go before other filters.
          */
         this.setupCasFilters();
-        this.setupAuthorizationFilter();
+        this.setupFilters();
         this.setupContainer();
     }
 

@@ -20,7 +20,12 @@ package org.eurekaclinical.common.config;
  * #L%
  */
 
-import com.google.inject.persist.PersistFilter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Singleton;
+import org.eurekaclinical.standardapis.filter.RolesFilter;
 import org.eurekaclinical.standardapis.props.EurekaClinicalProperties;
 
 /**
@@ -30,23 +35,20 @@ import org.eurekaclinical.standardapis.props.EurekaClinicalProperties;
  *
  * @author hrathod
  */
-public abstract class AbstractJerseyServletModuleWithPersist extends AbstractAuthorizingJerseyServletModule {
+public abstract class AbstractAuthorizingJerseyServletModule extends AbstractJerseyServletModule {
 
-    private static final String CONTAINER_PATH = "/api/*";
-
-    protected AbstractJerseyServletModuleWithPersist(EurekaClinicalProperties inProperties,
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(AbstractAuthorizingJerseyServletModule.class);
+    
+    protected AbstractAuthorizingJerseyServletModule(EurekaClinicalProperties inProperties,
             String inPackageNames) {
         super(inProperties, inPackageNames);
     }
 
     @Override
-    protected void configureServlets() {
-        /**
-         * Guice docs say that PersistFilter must be registered before any other
-         * filter.
-         */
-        filter(CONTAINER_PATH).through(PersistFilter.class);
-        super.configureServlets();
+    protected void setupFilters() {
+        bind(RolesFilter.class).in(Singleton.class);
+        filter("/*").through(RolesFilter.class);
     }
 
 }

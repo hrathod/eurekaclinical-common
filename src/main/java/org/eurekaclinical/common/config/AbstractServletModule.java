@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
-import org.eurekaclinical.standardapis.filter.RolesFilter;
 import org.eurekaclinical.standardapis.props.EurekaClinicalProperties;
 
 import org.jasig.cas.client.session.SingleSignOutFilter;
@@ -79,13 +78,6 @@ public abstract class AbstractServletModule extends ServletModule {
         filter(this.logoutPath).through(SingleSignOutFilter.class);
     }
 
-    private void setupAuthorizationFilter() {
-        bind(RolesFilter.class).in(Singleton.class);
-        Map<String, String> rolesFilterInitParams
-                = this.servletModuleSupport.getRolesFilterInitParams();
-        filter("/*").through(RolesFilter.class, rolesFilterInitParams);
-    }
-
     private void setupCasProxyFilter() {
         bind(Cas20ProxyReceivingTicketValidationFilter.class).in(
                 Singleton.class);
@@ -124,13 +116,12 @@ public abstract class AbstractServletModule extends ServletModule {
     }
 
     @Override
-    protected void configureServlets() {
+    protected final void configureServlets() {
         super.configureServlets();
         /*
 		 * CAS filters must go before other filters.
          */
         this.setupCasFilters();
-        this.setupAuthorizationFilter();
         this.setupFilters();
         this.setupServlets();
     }
