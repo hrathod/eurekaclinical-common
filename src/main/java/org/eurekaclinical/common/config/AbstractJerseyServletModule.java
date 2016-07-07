@@ -19,7 +19,6 @@ package org.eurekaclinical.common.config;
  * limitations under the License.
  * #L%
  */
-import org.eurekaclinical.standardapis.config.ServletModuleSupport;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,7 +52,6 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
             .getLogger(AbstractJerseyServletModule.class);
     private static final String CONTAINER_PATH = "/api/*";
     private static final String CONTAINER_PROTECTED_PATH = "/api/protected/*";
-    private static final String CAS_CALLBACK_PATH = "/proxyCallback";
     private static final String TEMPLATES_PATH = "/WEB-INF/templates";
     private static final String WEB_CONTENT_REGEX = "(/(image|js|css)/?.*)|(/.*\\.jsp)|(/WEB-INF/.*\\.jsp)|(/WEB-INF/.*\\.jspf)|(/.*\\.html)|(/favicon\\.ico)|(/robots\\.txt)";
     private final String packageNames;
@@ -71,13 +69,20 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
             LOGGER.debug(entry.getKey() + " -> " + entry.getValue());
         }
     }
+    
+    protected String getCasProxyCallbackPath() {
+        return this.servletModuleSupport.getCasProxyCallbackPath();
+    }
+    
+    protected String getCasProxyCallbackUrl() {
+        return this.servletModuleSupport.getCasProxyCallbackUrl();
+    }
 
-    private void setupCasProxyFilter() {
+    private void setupCasValidationFilter() {
         bind(Cas20ProxyReceivingTicketValidationFilter.class).in(
                 Singleton.class);
-        Map<String, String> params = this.servletModuleSupport
-                .getCasProxyFilterInitParamsForWebService();
-        filter(CAS_CALLBACK_PATH, CONTAINER_PROTECTED_PATH).through(
+        Map<String, String> params = getCasValidationFilterInitParams();
+        filter(this.servletModuleSupport.getCasProxyCallbackPath(), CONTAINER_PROTECTED_PATH).through(
                 Cas20ProxyReceivingTicketValidationFilter.class, params);
     }
 
@@ -116,6 +121,8 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
         serve(CONTAINER_PATH).with(GuiceContainer.class, params);
     }
     
+    protected abstract Map<String, String> getCasValidationFilterInitParams();
+    
     protected void setupFilters() {
     }
 
@@ -135,8 +142,8 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
      * https://wiki.jasig.org/display/CASC/CAS+Client+for+Java+3.1
      */
     private void setupCasFilters() {
+        this.setupCasValidationFilter();
         this.setupCasAuthenticationFilter();
-        this.setupCasProxyFilter();
         this.setupCasServletRequestWrapperFilter();
         this.setupCasThreadLocalAssertionFilter();
     }

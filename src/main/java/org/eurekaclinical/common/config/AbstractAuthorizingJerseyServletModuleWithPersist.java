@@ -30,11 +30,11 @@ import org.eurekaclinical.standardapis.props.EurekaClinicalProperties;
  *
  * @author hrathod
  */
-public abstract class AbstractJerseyServletModuleWithPersist extends AbstractAuthorizingJerseyServletModule {
+public abstract class AbstractAuthorizingJerseyServletModuleWithPersist extends AbstractAuthorizingJerseyServletModule {
 
     private static final String CONTAINER_PATH = "/api/*";
 
-    protected AbstractJerseyServletModuleWithPersist(EurekaClinicalProperties inProperties,
+    protected AbstractAuthorizingJerseyServletModuleWithPersist(EurekaClinicalProperties inProperties,
             String inPackageNames) {
         super(inProperties, inPackageNames);
     }

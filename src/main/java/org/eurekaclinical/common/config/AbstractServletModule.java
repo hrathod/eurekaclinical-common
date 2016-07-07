@@ -20,7 +20,6 @@ package org.eurekaclinical.common.config;
  * #L%
  */
 
-import org.eurekaclinical.standardapis.config.ServletModuleSupport;
 import java.util.Map;
 
 import org.jasig.cas.client.authentication.AuthenticationFilter;
@@ -47,7 +46,6 @@ public abstract class AbstractServletModule extends ServletModule {
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(AbstractServletModule.class);
-    private static final String CAS_CALLBACK_PATH = "/proxyCallback";
     private final String protectedPath;
     private final ServletModuleSupport servletModuleSupport;
     private final String logoutPath;
@@ -78,12 +76,11 @@ public abstract class AbstractServletModule extends ServletModule {
         filter(this.logoutPath).through(SingleSignOutFilter.class);
     }
 
-    private void setupCasProxyFilter() {
+    private void setupCasValidationFilter() {
         bind(Cas20ProxyReceivingTicketValidationFilter.class).in(
                 Singleton.class);
-        Map<String, String> params
-                = this.servletModuleSupport.getCasProxyFilterInitParamsForWebApp();
-        filter(CAS_CALLBACK_PATH, this.protectedPath).through(
+        Map<String, String> params = getCasValidationFilterInitParams();
+        filter(this.servletModuleSupport.getCasProxyCallbackPath(), this.protectedPath).through(
                 Cas20ProxyReceivingTicketValidationFilter.class, params);
     }
 
@@ -105,6 +102,16 @@ public abstract class AbstractServletModule extends ServletModule {
         bind(AssertionThreadLocalFilter.class).in(Singleton.class);
         filter("/*").through(AssertionThreadLocalFilter.class);
     }
+    
+    protected String getCasProxyCallbackPath() {
+        return this.servletModuleSupport.getCasProxyCallbackPath();
+    }
+    
+    protected String getCasProxyCallbackUrl() {
+        return this.servletModuleSupport.getCasProxyCallbackUrl();
+    }
+    
+    protected abstract Map<String, String> getCasValidationFilterInitParams();
 
     protected abstract void setupServlets();
 
@@ -127,15 +134,15 @@ public abstract class AbstractServletModule extends ServletModule {
     }
 
     /*
-	 * Sets up CAS filters. The filter order is specified in
-	 * https://wiki.jasig.org/display/CASC/Configuring+Single+Sign+Out
-	 * and
-	 * https://wiki.jasig.org/display/CASC/CAS+Client+for+Java+3.1
+     * Sets up CAS filters. The filter order is specified in
+     * https://wiki.jasig.org/display/CASC/Configuring+Single+Sign+Out
+     * and
+     * https://wiki.jasig.org/display/CASC/CAS+Client+for+Java+3.1
      */
     private void setupCasFilters() {
         this.setupCasSingleSignOutFilter();
         this.setupCasAuthenticationFilter();
-        this.setupCasProxyFilter();
+        this.setupCasValidationFilter();
         this.setupCasServletRequestWrapperFilter();
         this.setupCasThreadLocalAssertionFilter();
     }

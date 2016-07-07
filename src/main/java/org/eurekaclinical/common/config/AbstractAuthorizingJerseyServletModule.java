@@ -19,8 +19,6 @@ package org.eurekaclinical.common.config;
  * limitations under the License.
  * #L%
  */
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +37,7 @@ public abstract class AbstractAuthorizingJerseyServletModule extends AbstractJer
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(AbstractAuthorizingJerseyServletModule.class);
-    
+
     protected AbstractAuthorizingJerseyServletModule(EurekaClinicalProperties inProperties,
             String inPackageNames) {
         super(inProperties, inPackageNames);
