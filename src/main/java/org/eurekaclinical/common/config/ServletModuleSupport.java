@@ -2,7 +2,7 @@ package org.eurekaclinical.common.config;
 
 /*-
  * #%L
- * Eureka! Clinical Standard APIs
+ * Eureka! Clinical Common
  * %%
  * Copyright (C) 2016 Emory University
  * %%
