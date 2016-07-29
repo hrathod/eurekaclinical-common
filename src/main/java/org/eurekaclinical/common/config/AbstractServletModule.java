@@ -19,7 +19,6 @@ package org.eurekaclinical.common.config;
  * limitations under the License.
  * #L%
  */
-
 import java.util.Map;
 
 import org.jasig.cas.client.authentication.AuthenticationFilter;
@@ -49,15 +48,12 @@ public abstract class AbstractServletModule extends ServletModule {
     private final String protectedPath;
     private final ServletModuleSupport servletModuleSupport;
     private final String logoutPath;
-
+    
     protected AbstractServletModule(EurekaClinicalProperties inProperties,
             String inContainerPath, String inProtectedPath,
             String inLogoutPath) {
         if (inProtectedPath == null) {
             throw new IllegalArgumentException("inProtectedPath cannot be null");
-        }
-        if (inLogoutPath == null) {
-            throw new IllegalArgumentException("inLogoutPath cannot be null");
         }
         this.servletModuleSupport = new ServletModuleSupport(
                 this.getServletContext().getContextPath(), inProperties);
@@ -72,8 +68,10 @@ public abstract class AbstractServletModule extends ServletModule {
     }
 
     private void setupCasSingleSignOutFilter() {
-        bind(SingleSignOutFilter.class).in(Singleton.class);
-        filter(this.logoutPath).through(SingleSignOutFilter.class);
+        if (this.logoutPath != null) {
+            bind(SingleSignOutFilter.class).in(Singleton.class);
+            filter(this.logoutPath).through(SingleSignOutFilter.class);
+        }
     }
 
     private void setupCasValidationFilter() {
@@ -102,15 +100,15 @@ public abstract class AbstractServletModule extends ServletModule {
         bind(AssertionThreadLocalFilter.class).in(Singleton.class);
         filter("/*").through(AssertionThreadLocalFilter.class);
     }
-    
+
     protected String getCasProxyCallbackPath() {
         return this.servletModuleSupport.getCasProxyCallbackPath();
     }
-    
+
     protected String getCasProxyCallbackUrl() {
         return this.servletModuleSupport.getCasProxyCallbackUrl();
     }
-    
+
     protected abstract Map<String, String> getCasValidationFilterInitParams();
 
     protected abstract void setupServlets();
