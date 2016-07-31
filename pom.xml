@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.eurekaclinical</groupId>
         <artifactId>eurekaclinical-parent-standard-deps</artifactId>
-        <version>1-Alpha-4</version>
+        <version>1-Alpha-5</version>
     </parent>
     
     <properties>
