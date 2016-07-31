@@ -56,12 +56,14 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
     private static final String WEB_CONTENT_REGEX = "(/(image|js|css)/?.*)|(/.*\\.jsp)|(/WEB-INF/.*\\.jsp)|(/WEB-INF/.*\\.jspf)|(/.*\\.html)|(/favicon\\.ico)|(/robots\\.txt)";
     private final String packageNames;
     private final ServletModuleSupport servletModuleSupport;
+    private final EurekaClinicalProperties properties;
 
     protected AbstractJerseyServletModule(EurekaClinicalProperties inProperties,
             String inPackageNames) {
         this.servletModuleSupport = new ServletModuleSupport(this
                 .getServletContext().getContextPath(), inProperties);
         this.packageNames = inPackageNames;
+        this.properties = inProperties;
     }
 
     protected void printParams(Map<String, String> inParams) {
@@ -76,6 +78,15 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
     
     protected String getCasProxyCallbackUrl() {
         return this.servletModuleSupport.getCasProxyCallbackUrl();
+    }
+    
+    protected Map<String, String> getCasValidationFilterInitParams() {
+        Map<String, String> params = new HashMap<>();
+        params.put("casServerUrlPrefix", this.properties.getCasUrl());
+        params.put("serverName", this.properties.getProxyCallbackServer());
+        params.put("redirectAfterValidation", "false");
+        params.put("acceptAnyProxy", "true");
+        return params;
     }
 
     private void setupCasValidationFilter() {
@@ -120,8 +131,6 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
         }
         serve(CONTAINER_PATH).with(GuiceContainer.class, params);
     }
-    
-    protected abstract Map<String, String> getCasValidationFilterInitParams();
     
     protected void setupFilters() {
     }
