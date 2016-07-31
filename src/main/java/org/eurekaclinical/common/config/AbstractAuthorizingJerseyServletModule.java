@@ -19,8 +19,6 @@ package org.eurekaclinical.common.config;
  * limitations under the License.
  * #L%
  */
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.Singleton;
 import org.eurekaclinical.standardapis.filter.RolesFilter;
@@ -35,9 +33,6 @@ import org.eurekaclinical.standardapis.props.EurekaClinicalProperties;
  */
 public abstract class AbstractAuthorizingJerseyServletModule extends AbstractJerseyServletModule {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(AbstractAuthorizingJerseyServletModule.class);
-
     protected AbstractAuthorizingJerseyServletModule(EurekaClinicalProperties inProperties,
             String inPackageNames) {
         super(inProperties, inPackageNames);
@@ -48,5 +43,5 @@ public abstract class AbstractAuthorizingJerseyServletModule extends AbstractJer
         bind(RolesFilter.class).in(Singleton.class);
         filter("/*").through(RolesFilter.class);
     }
-
+    
 }
