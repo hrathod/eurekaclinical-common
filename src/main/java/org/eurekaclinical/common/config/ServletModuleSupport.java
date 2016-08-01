@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.eurekaclinical.standardapis.props.EurekaClinicalProperties;
+import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
 /**
  *
@@ -36,11 +36,11 @@ final class ServletModuleSupport {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(ServletModuleSupport.class);
     private static final String CAS_PROXY_CALLBACK_PATH = "/proxyCallback";
-    private final EurekaClinicalProperties properties;
+    private final CasEurekaClinicalProperties properties;
     private final String contextPath;
 
     ServletModuleSupport(String contextPath,
-            EurekaClinicalProperties inProperties) {
+            CasEurekaClinicalProperties inProperties) {
         this.properties = inProperties;
         this.contextPath = contextPath;
     }

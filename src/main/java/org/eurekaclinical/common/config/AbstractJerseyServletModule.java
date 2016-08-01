@@ -37,7 +37,7 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
-import org.eurekaclinical.standardapis.props.EurekaClinicalProperties;
+import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
 /**
  * Extend to setup Eureka RESTful web services. This abstract class sets up
@@ -56,9 +56,9 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
     private static final String WEB_CONTENT_REGEX = "(/(image|js|css)/?.*)|(/.*\\.jsp)|(/WEB-INF/.*\\.jsp)|(/WEB-INF/.*\\.jspf)|(/.*\\.html)|(/favicon\\.ico)|(/robots\\.txt)";
     private final String packageNames;
     private final ServletModuleSupport servletModuleSupport;
-    private final EurekaClinicalProperties properties;
+    private final CasEurekaClinicalProperties properties;
 
-    protected AbstractJerseyServletModule(EurekaClinicalProperties inProperties,
+    protected AbstractJerseyServletModule(CasEurekaClinicalProperties inProperties,
             String inPackageNames) {
         this.servletModuleSupport = new ServletModuleSupport(this
                 .getServletContext().getContextPath(), inProperties);

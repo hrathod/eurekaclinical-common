@@ -21,7 +21,7 @@ package org.eurekaclinical.common.config;
  */
 
 import com.google.inject.persist.PersistFilter;
-import org.eurekaclinical.standardapis.props.EurekaClinicalProperties;
+import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
 /**
  * Extend to setup Eureka RESTful web services. This abstract class sets up
@@ -34,7 +34,7 @@ public abstract class AbstractAuthorizingJerseyServletModuleWithPersist extends 
 
     private static final String CONTAINER_PATH = "/api/*";
 
-    protected AbstractAuthorizingJerseyServletModuleWithPersist(EurekaClinicalProperties inProperties,
+    protected AbstractAuthorizingJerseyServletModuleWithPersist(CasEurekaClinicalProperties inProperties,
             String inPackageNames) {
         super(inProperties, inPackageNames);
     }

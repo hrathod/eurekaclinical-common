@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
-import org.eurekaclinical.standardapis.props.EurekaClinicalProperties;
+import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
 import org.jasig.cas.client.session.SingleSignOutFilter;
 import org.jasig.cas.client.validation.Cas20ProxyReceivingTicketValidationFilter;
@@ -49,7 +49,7 @@ public abstract class AbstractServletModule extends ServletModule {
     private final ServletModuleSupport servletModuleSupport;
     private final String logoutPath;
     
-    protected AbstractServletModule(EurekaClinicalProperties inProperties,
+    protected AbstractServletModule(CasEurekaClinicalProperties inProperties,
             String inContainerPath, String inProtectedPath,
             String inLogoutPath) {
         if (inProtectedPath == null) {

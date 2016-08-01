@@ -31,15 +31,15 @@ import javax.servlet.http.HttpSession;
 
 import javax.inject.Singleton;
 
-import org.eurekaclinical.standardapis.props.EurekaClinicalProperties;
+import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
 @Singleton
 public class LogoutServlet extends HttpServlet {
 
-    private final EurekaClinicalProperties webappProperties;
+    private final CasEurekaClinicalProperties webappProperties;
 
     @Inject
-    public LogoutServlet(EurekaClinicalProperties inProperties) {
+    public LogoutServlet(CasEurekaClinicalProperties inProperties) {
         this.webappProperties = inProperties;
     }
 

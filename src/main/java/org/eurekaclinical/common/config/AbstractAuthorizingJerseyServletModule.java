@@ -22,7 +22,7 @@ package org.eurekaclinical.common.config;
 
 import com.google.inject.Singleton;
 import org.eurekaclinical.standardapis.filter.RolesFilter;
-import org.eurekaclinical.standardapis.props.EurekaClinicalProperties;
+import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
 /**
  * Extend to setup Eureka RESTful web services. This abstract class sets up
@@ -33,7 +33,7 @@ import org.eurekaclinical.standardapis.props.EurekaClinicalProperties;
  */
 public abstract class AbstractAuthorizingJerseyServletModule extends AbstractJerseyServletModule {
 
-    protected AbstractAuthorizingJerseyServletModule(EurekaClinicalProperties inProperties,
+    protected AbstractAuthorizingJerseyServletModule(CasEurekaClinicalProperties inProperties,
             String inPackageNames) {
         super(inProperties, inPackageNames);
     }
