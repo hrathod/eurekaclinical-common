@@ -22,39 +22,31 @@ package org.eurekaclinical.common.resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import org.eurekaclinical.standardapis.dao.UserDao;
-import org.eurekaclinical.common.comm.User;
-import org.eurekaclinical.standardapis.entity.RoleEntity;
-import org.eurekaclinical.standardapis.entity.UserEntity;
+import org.eurekaclinical.standardapis.dao.DaoWithUniqueName;
+import org.eurekaclinical.standardapis.entity.Entity;
 
 /**
  *
  * @author Andrew Post
  */
-public abstract class AbstractUserResource<U extends User, E extends UserEntity<R>, R extends RoleEntity> extends AbstractNamedReadWriteResource<E, U> {
+public abstract class AbstractNamedReadOnlyResource<E extends Entity, C extends Object> extends AbstractReadOnlyResource<E, C> {
 
-    public AbstractUserResource(UserDao<E> inUserDao) {
-        super(inUserDao);
+    private final GetByNameSupport<E, C> support;
+
+    public AbstractNamedReadOnlyResource(DaoWithUniqueName<E, Long> inRoleDao) {
+        super(inRoleDao);
+        this.support = new GetByNameSupport<>(inRoleDao, this);
     }
 
     @GET
-    @Path("/me")
+    @Path("/byname/{name}")
     @Produces(MediaType.APPLICATION_JSON)
-    public U getCurrent(@Context HttpServletRequest req) {
-        return getByName(req.getRemoteUser(), req);
-    }
-
-    @Override
-    protected boolean isAuthorizedComm(U commObj, HttpServletRequest req) {
-        return req.getRemoteUser().equals(commObj.getUsername());
-    }
-
-    @Override
-    protected boolean isAuthorizedEntity(E entity, HttpServletRequest req) {
-        return req.getRemoteUser().equals(entity.getUsername());
+    public C getByName(@PathParam("name") String inName, @Context HttpServletRequest req) {
+        return this.support.get(inName, req);
     }
 
 }

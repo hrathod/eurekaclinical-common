@@ -119,7 +119,7 @@ public abstract class AbstractServletModule extends ServletModule {
      */
     protected void setupFilters() {
     }
-
+    
     @Override
     protected final void configureServlets() {
         super.configureServlets();

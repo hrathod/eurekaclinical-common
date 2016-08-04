@@ -20,19 +20,14 @@ package org.eurekaclinical.common.comm;
  * #L%
  */
 
-import java.util.List;
-
 /**
  *
  * @author Andrew Post
  */
-public class User {
-
+public class Group {
     private Long id;
-    private String username;
-    
-    private List<Long> roles;
-    
+    private String name;
+
     public Long getId() {
         return id;
     }
@@ -41,20 +36,12 @@ public class User {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getName() {
+        return name;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setName(String name) {
+        this.name = name;
     }
-
-    public List<Long> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<Long> roles) {
-        this.roles = roles;
-    }
-
+    
 }

@@ -1,8 +1,8 @@
-package org.eurekaclinical.common.comm;
+package org.eurekaclinical.common.filter;
 
 /*-
  * #%L
- * Eureka! Clinical Common
+ * Eureka! Clinical Standard APIs
  * %%
  * Copyright (C) 2016 Emory University
  * %%
@@ -20,41 +20,12 @@ package org.eurekaclinical.common.comm;
  * #L%
  */
 
-import java.util.List;
+import javax.servlet.Filter;
 
 /**
  *
- * @author Andrew Post
+ * @author arpost
  */
-public class User {
-
-    private Long id;
-    private String username;
-    
-    private List<Long> roles;
-    
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public List<Long> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<Long> roles) {
-        this.roles = roles;
-    }
+public interface AutoAuthorizationFilter extends Filter {
 
 }

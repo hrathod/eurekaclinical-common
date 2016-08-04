@@ -1,4 +1,4 @@
-package org.eurekaclinical.common.comm;
+package org.eurekaclinical.common.resource;
 
 /*-
  * #%L
@@ -20,41 +20,21 @@ package org.eurekaclinical.common.comm;
  * #L%
  */
 
-import java.util.List;
+import org.eurekaclinical.standardapis.dao.Dao;
+import org.eurekaclinical.standardapis.entity.Entity;
 
 /**
  *
  * @author Andrew Post
  */
-public class User {
-
-    private Long id;
-    private String username;
+public abstract class AbstractReadOnlyResource<E extends Entity, C extends Object> extends AbstractResource<E, C> {
     
-    private List<Long> roles;
+    protected AbstractReadOnlyResource(Dao<E, Long> inDao) {
+        super(inDao);
+    }
+
+    protected AbstractReadOnlyResource(Dao<E, Long> inDao, boolean inRestricted) {
+        super(inDao, inRestricted);
+    }
     
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public List<Long> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<Long> roles) {
-        this.roles = roles;
-    }
-
 }

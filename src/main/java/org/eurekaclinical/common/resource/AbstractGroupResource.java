@@ -1,4 +1,4 @@
-package org.eurekaclinical.common.comm;
+package org.eurekaclinical.common.resource;
 
 /*-
  * #%L
@@ -20,41 +20,19 @@ package org.eurekaclinical.common.comm;
  * #L%
  */
 
-import java.util.List;
+import org.eurekaclinical.common.comm.Group;
+import org.eurekaclinical.standardapis.dao.GroupDao;
+import org.eurekaclinical.standardapis.entity.GroupEntity;
 
 /**
  *
  * @author Andrew Post
  */
-public class User {
+public abstract class AbstractGroupResource<E extends GroupEntity, G extends Group> extends AbstractNamedReadWriteResource<E, G> {
 
-    private Long id;
-    private String username;
-    
-    private List<Long> roles;
-    
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public List<Long> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<Long> roles) {
-        this.roles = roles;
+    public AbstractGroupResource(GroupDao<E> inGroupDao) {
+        super(inGroupDao);
     }
 
 }

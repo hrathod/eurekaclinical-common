@@ -19,6 +19,7 @@ package org.eurekaclinical.common.config;
  * limitations under the License.
  * #L%
  */
+import com.google.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +38,7 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
+import org.eurekaclinical.common.filter.AutoAuthorizationFilter;
 import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
 /**
@@ -58,6 +60,9 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
     private final ServletModuleSupport servletModuleSupport;
     private final CasEurekaClinicalProperties properties;
 
+    @Inject(optional = true)
+    private AutoAuthorizationFilter autoAuthorizationFilter;
+
     protected AbstractJerseyServletModule(CasEurekaClinicalProperties inProperties,
             String inPackageNames) {
         this.servletModuleSupport = new ServletModuleSupport(this
@@ -71,15 +76,15 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
             LOGGER.debug(entry.getKey() + " -> " + entry.getValue());
         }
     }
-    
+
     protected String getCasProxyCallbackPath() {
         return this.servletModuleSupport.getCasProxyCallbackPath();
     }
-    
+
     protected String getCasProxyCallbackUrl() {
         return this.servletModuleSupport.getCasProxyCallbackUrl();
     }
-    
+
     protected Map<String, String> getCasValidationFilterInitParams() {
         Map<String, String> params = new HashMap<>();
         params.put("casServerUrlPrefix", this.properties.getCasUrl());
@@ -131,8 +136,14 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
         }
         serve(CONTAINER_PATH).with(GuiceContainer.class, params);
     }
-    
+
     protected void setupFilters() {
+    }
+
+    protected void setupAutoAuthorization() {
+        if (this.autoAuthorizationFilter != null) {
+            filter("/*").through(AutoAuthorizationFilter.class);
+        }
     }
 
     @Override
@@ -142,6 +153,7 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
          * CAS filters must go before other filters.
          */
         this.setupCasFilters();
+        this.setupAutoAuthorization();
         this.setupFilters();
         this.setupContainer();
     }

@@ -25,19 +25,19 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import org.eurekaclinical.standardapis.dao.UserDao;
-import org.eurekaclinical.common.comm.User;
+import org.eurekaclinical.common.comm.UserTemplate;
+import org.eurekaclinical.standardapis.dao.UserTemplateDao;
 import org.eurekaclinical.standardapis.entity.RoleEntity;
-import org.eurekaclinical.standardapis.entity.UserEntity;
+import org.eurekaclinical.standardapis.entity.UserTemplateEntity;
 
 /**
  *
  * @author Andrew Post
  */
-public abstract class AbstractUserResource<U extends User, E extends UserEntity<R>, R extends RoleEntity> extends AbstractNamedReadWriteResource<E, U> {
+public abstract class AbstractUserTemplateResource<U extends UserTemplate, R extends RoleEntity, E extends UserTemplateEntity<R>> extends AbstractNamedReadWriteResource<E, U> {
 
-    public AbstractUserResource(UserDao<E> inUserDao) {
-        super(inUserDao);
+    public AbstractUserTemplateResource(UserTemplateDao<E> inUserDao) {
+        super(inUserDao, true);
     }
 
     @GET
@@ -49,12 +49,12 @@ public abstract class AbstractUserResource<U extends User, E extends UserEntity<
 
     @Override
     protected boolean isAuthorizedComm(U commObj, HttpServletRequest req) {
-        return req.getRemoteUser().equals(commObj.getUsername());
+        return true;
     }
 
     @Override
     protected boolean isAuthorizedEntity(E entity, HttpServletRequest req) {
-        return req.getRemoteUser().equals(entity.getUsername());
+        return true;
     }
 
 }

@@ -26,13 +26,11 @@ import java.util.List;
  *
  * @author Andrew Post
  */
-public class User {
-
+public class UserTemplate {
     private Long id;
-    private String username;
-    
+    private String name;
     private List<Long> roles;
-    
+
     public Long getId() {
         return id;
     }
@@ -41,12 +39,12 @@ public class User {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getName() {
+        return name;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<Long> getRoles() {
@@ -57,4 +55,9 @@ public class User {
         this.roles = roles;
     }
 
+    @Override
+    public String toString() {
+        return "UserTemplate{" + "id=" + id + ", name=" + name + ", roles=" + roles + '}';
+    }
+    
 }
