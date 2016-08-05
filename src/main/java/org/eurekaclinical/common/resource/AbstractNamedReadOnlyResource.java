@@ -41,6 +41,11 @@ public abstract class AbstractNamedReadOnlyResource<E extends Entity, C extends 
         super(inRoleDao);
         this.support = new GetByNameSupport<>(inRoleDao, this);
     }
+    
+    public AbstractNamedReadOnlyResource(DaoWithUniqueName<E, Long> inRoleDao, boolean restricted) {
+        super(inRoleDao, restricted);
+        this.support = new GetByNameSupport<>(inRoleDao, this);
+    }
 
     @GET
     @Path("/byname/{name}")

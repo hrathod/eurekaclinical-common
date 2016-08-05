@@ -33,7 +33,7 @@ public abstract class AbstractRoleResource<E extends RoleEntity, R extends Role>
     private final RoleDao<E> roleDao;
 
     public AbstractRoleResource(RoleDao<E> inRoleDao) {
-        super(inRoleDao);
+        super(inRoleDao, false);
         this.roleDao = inRoleDao;
     }
 

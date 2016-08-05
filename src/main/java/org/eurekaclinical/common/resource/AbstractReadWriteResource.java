@@ -21,7 +21,6 @@ package org.eurekaclinical.common.resource;
  */
 
 import java.net.URI;
-import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -42,7 +41,8 @@ public abstract class AbstractReadWriteResource<E extends Entity, C extends Obje
     private final Dao<E, Long> dao;
     
     protected AbstractReadWriteResource(Dao<E, Long> inDao) {
-        this(inDao, true);
+        super(inDao);
+        this.dao = inDao;
     }
     
     protected AbstractReadWriteResource(Dao<E, Long> inDao, boolean inRestricted) {

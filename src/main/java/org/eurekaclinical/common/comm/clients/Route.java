@@ -1,5 +1,8 @@
 package org.eurekaclinical.common.comm.clients;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /*-
  * #%L
  * Eureka! Clinical Common
@@ -19,7 +22,6 @@ package org.eurekaclinical.common.comm.clients;
  * limitations under the License.
  * #L%
  */
-
 /**
  *
  * @author Andrew Post
@@ -29,11 +31,13 @@ public class Route {
     private final EurekaClinicalClient client;
     private final String replacementPathPrefix;
     private final String matchingPathPrefix;
+    private final Pattern pattern;
 
     public Route(String inMatchingPathPrefix, String inReplacementPathPrefix, EurekaClinicalClient inClient) {
         this.matchingPathPrefix = inMatchingPathPrefix;
         this.replacementPathPrefix = inReplacementPathPrefix;
         this.client = inClient;
+        this.pattern = Pattern.compile("^" + this.matchingPathPrefix);
     }
 
     public EurekaClinicalClient getClient() {
@@ -43,9 +47,21 @@ public class Route {
     public String getReplacementPathPrefix() {
         return replacementPathPrefix;
     }
-    
+
     public String replace(String path) {
-        return path.replaceAll("^" + this.matchingPathPrefix, this.replacementPathPrefix);
+        Matcher matcher = this.pattern.matcher(path);
+        StringBuffer sb = new StringBuffer();
+        boolean match = false;
+        while (matcher.find()) {
+            match = true;
+            matcher.appendReplacement(sb, this.replacementPathPrefix);
+        }
+        matcher.appendTail(sb);
+        if (match) {
+            return sb.toString();
+        } else {
+            return null;
+        }
     }
-    
+
 }
