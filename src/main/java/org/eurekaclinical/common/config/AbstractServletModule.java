@@ -47,18 +47,15 @@ public abstract class AbstractServletModule extends ServletModule {
             .getLogger(AbstractServletModule.class);
     private final String protectedPath;
     private final ServletModuleSupport servletModuleSupport;
-    private final String logoutPath;
-    
+
     protected AbstractServletModule(CasEurekaClinicalProperties inProperties,
-            String inContainerPath, String inProtectedPath,
-            String inLogoutPath) {
+            String inContainerPath, String inProtectedPath) {
         if (inProtectedPath == null) {
             throw new IllegalArgumentException("inProtectedPath cannot be null");
         }
         this.servletModuleSupport = new ServletModuleSupport(
                 this.getServletContext().getContextPath(), inProperties);
         this.protectedPath = inProtectedPath;
-        this.logoutPath = inLogoutPath;
     }
 
     protected void printParams(Map<String, String> inParams) {
@@ -68,10 +65,8 @@ public abstract class AbstractServletModule extends ServletModule {
     }
 
     private void setupCasSingleSignOutFilter() {
-        if (this.logoutPath != null) {
-            bind(SingleSignOutFilter.class).in(Singleton.class);
-            filter(this.logoutPath).through(SingleSignOutFilter.class);
-        }
+        bind(SingleSignOutFilter.class).in(Singleton.class);
+        filter("/*").through(SingleSignOutFilter.class);
     }
 
     private void setupCasValidationFilter() {
@@ -119,7 +114,7 @@ public abstract class AbstractServletModule extends ServletModule {
      */
     protected void setupFilters() {
     }
-    
+
     @Override
     protected final void configureServlets() {
         super.configureServlets();

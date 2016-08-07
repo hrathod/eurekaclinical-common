@@ -24,8 +24,6 @@ package org.eurekaclinical.common.config;
 import com.google.inject.Singleton;
 import org.eurekaclinical.standardapis.filter.RolesFilter;
 import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 
@@ -38,13 +36,9 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractAuthorizingServletModule extends AbstractServletModule {
     
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(AbstractAuthorizingServletModule.class);
-
     protected AbstractAuthorizingServletModule(CasEurekaClinicalProperties inProperties,
-            String inContainerPath, String inProtectedPath,
-            String inLogoutPath) {
-        super(inProperties, inContainerPath, inProtectedPath, inLogoutPath);
+            String inContainerPath, String inProtectedPath) {
+        super(inProperties, inContainerPath, inProtectedPath);
     }
 
     @Override
