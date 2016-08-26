@@ -29,6 +29,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.inject.Singleton;
 
 
+/**
+ * Servlet that does nothing but return 200 in response to a GET.
+ * 
+ * @author Andrew Post
+ */
 @Singleton
 public class LoginServlet extends HttpServlet {
 
