@@ -24,9 +24,10 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
+import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
+import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
@@ -41,17 +42,11 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.ContextResolver;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * @author Andrew Post
  * @author hrathod
  */
 public abstract class EurekaClinicalClient {
-
-    private static final Logger LOGGER
-            = LoggerFactory.getLogger(EurekaClinicalClient.class);
 
     private final WebResourceWrapperFactory webResourceWrapperFactory;
     private final Class<? extends ContextResolver<? extends ObjectMapper>> contextResolverCls;
@@ -66,16 +61,14 @@ public abstract class EurekaClinicalClient {
     }
 
     protected Client getRestClient(Class<? extends ContextResolver<? extends ObjectMapper>> cls) {
-        ClientConfig clientConfig = new DefaultClientConfig();
-        //ApacheHttpClientConfig clientConfig = new DefaultApacheHttpClientConfig();
-        //clientConfig.getProperties().put(ApacheHttpClientConfig.PROPERTY_HANDLE_COOKIES, true);
+        ApacheHttpClient4Config clientConfig = new DefaultApacheHttpClient4Config();
+        clientConfig.getProperties().put(ApacheHttpClient4Config.PROPERTY_DISABLE_COOKIES, false);
         clientConfig.getFeatures().put(
                 JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
         if (cls != null) {
             clientConfig.getClasses().add(cls);
         }
-        return Client.create(clientConfig);
-        //return ApacheHttpClient.create(clientConfig);
+        return ApacheHttpClient4.create(clientConfig);
     }
 
     protected abstract String getResourceUrl();
@@ -229,6 +222,15 @@ public abstract class EurekaClinicalClient {
                 .accept(MediaType.APPLICATION_JSON)
                 .type(MediaType.APPLICATION_JSON)
                 .post(ClientResponse.class, o);
+        errorIfStatusNotEqualTo(response, ClientResponse.Status.CREATED);
+        return response.getLocation();
+    }
+    
+    protected URI doPostCreate(String path, InputStream inputStream) throws ClientException {
+        ClientResponse response = getResourceWrapper().rewritten(path, HttpMethod.POST)
+                .accept(MediaType.APPLICATION_JSON)
+                .type(MediaType.APPLICATION_JSON)
+                .post(ClientResponse.class, inputStream);
         errorIfStatusNotEqualTo(response, ClientResponse.Status.CREATED);
         return response.getLocation();
     }
