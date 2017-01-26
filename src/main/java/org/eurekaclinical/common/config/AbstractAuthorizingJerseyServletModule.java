@@ -20,8 +20,7 @@ package org.eurekaclinical.common.config;
  * #L%
  */
 
-import com.google.inject.Singleton;
-import org.eurekaclinical.standardapis.filter.RolesFilter;
+import org.eurekaclinical.standardapis.filter.RolesFromDbFilter;
 import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
 /**
@@ -40,8 +39,7 @@ public abstract class AbstractAuthorizingJerseyServletModule extends AbstractJer
 
     @Override
     protected void setupFilters() {
-        bind(RolesFilter.class).in(Singleton.class);
-        filter("/*").through(RolesFilter.class);
+        filter("/*").through(RolesFromDbFilter.class);
     }
     
 }
