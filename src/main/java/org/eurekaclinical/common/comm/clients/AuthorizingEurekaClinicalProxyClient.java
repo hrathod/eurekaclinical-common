@@ -42,7 +42,7 @@ public abstract class AuthorizingEurekaClinicalProxyClient extends EurekaClinica
         super(cls);
     }
     
-    public List<User> getUsers() throws ClientException {
+    public List<? extends User> getUsers() throws ClientException {
         final String path = "/api/protected/users";
         return doGet(path, UserList);
     }
