@@ -25,6 +25,7 @@ import java.util.List;
 import javax.ws.rs.ext.ContextResolver;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.eurekaclinical.common.comm.Role;
+import org.eurekaclinical.common.comm.User;
 
 /**
  *
@@ -32,11 +33,28 @@ import org.eurekaclinical.common.comm.Role;
  */
 public abstract class AuthorizingEurekaClinicalProxyClient extends EurekaClinicalClient {
 
+    private static final GenericType<List<User>> UserList = new GenericType<List<User>>() {
+    };
     private static final GenericType<List<Role>> RoleList = new GenericType<List<Role>>() {
     };
 
     protected AuthorizingEurekaClinicalProxyClient(Class<? extends ContextResolver<? extends ObjectMapper>> cls) {
         super(cls);
+    }
+    
+    public List<User> getUsers() throws ClientException {
+        final String path = "/api/protected/users";
+        return doGet(path, UserList);
+    }
+
+    public User getMe() throws ClientException {
+        String path = "/api/protected/users/me";
+        return doGet(path, User.class);
+    }
+
+    public User getUserById(Long inUserId) throws ClientException {
+        final String path = "/api/protected/users/" + inUserId;
+        return doGet(path, User.class);
     }
 
     public List<Role> getRoles() throws ClientException {

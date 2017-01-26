@@ -37,6 +37,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.eurekaclinical.common.comm.Role;
+import org.eurekaclinical.common.comm.User;
 import org.eurekaclinical.common.comm.clients.AuthorizingEurekaClinicalProxyClient;
 import org.eurekaclinical.common.comm.clients.ClientException;
 import org.eurekaclinical.standardapis.filter.RolesFilter;
@@ -73,20 +74,16 @@ public class RolesFromServiceFilter implements RolesFilter {
                 assert principal != null : "principal should not be null";
                 
                 List<Role> roles = this.client.getRoles();//eureka project roles table
+                User user = this.client.getMe();
+                List<Long> roleIds = user.getRoles();
 
-                Map<Long, Role> idsToRoles = new HashMap<>();
-
+                Set<String> roleNames = new HashSet<>();
                 for (Role role : roles) {
-                    if (servletRequest.isUserInRole(role.getName())) {
-                        idsToRoles.put(role.getId(), role);
+                    if (roleIds.contains(role.getId())) {
+                        roleNames.add(role.getName());
                     }
                 }
 
-                Set<String> roleNames = new HashSet<>();
-                for (Map.Entry<Long, Role> idToRole : idsToRoles.entrySet()) {
-                    roleNames.add(idToRole.getValue().getName());
-                }
-                
                 HttpServletRequest wrappedRequest = new RolesRequestWrapper(
                         servletRequest, principal, roleNames);
 
