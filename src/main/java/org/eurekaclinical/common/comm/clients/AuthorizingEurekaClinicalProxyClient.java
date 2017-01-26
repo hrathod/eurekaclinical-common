@@ -40,16 +40,16 @@ public abstract class AuthorizingEurekaClinicalProxyClient extends EurekaClinica
     }
 
     public List<Role> getRoles() throws ClientException {
-        final String path = "/proxy-resource/roles";
+        final String path = "/api/protected/roles";
         return doGet(path, RoleList);
     }
 
     public Role getRole(Long inRoleId) throws ClientException {
-        final String path = "/proxy-resource/roles/" + inRoleId;
+        final String path = "/api/protected/roles/" + inRoleId;
         return doGet(path, Role.class);
     }
 
     public Role getRoleByName(String name) throws ClientException {
-        return doGet("/proxy-resource/roles/byname/" + name, Role.class);
+        return doGet("/api/protected/roles/byname/" + name, Role.class);
     }
 }

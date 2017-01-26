@@ -37,7 +37,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.eurekaclinical.common.comm.Role;
-import org.eurekaclinical.common.comm.clients.AuthorizingEurekaClinicalClient;
+import org.eurekaclinical.common.comm.clients.AuthorizingEurekaClinicalProxyClient;
 import org.eurekaclinical.common.comm.clients.ClientException;
 import org.eurekaclinical.standardapis.filter.RolesFilter;
 import org.eurekaclinical.standardapis.filter.RolesRequestWrapper;
@@ -49,10 +49,10 @@ import org.eurekaclinical.standardapis.filter.RolesRequestWrapper;
 @Singleton
 public class RolesFromServiceFilter implements RolesFilter {
 
-    private final AuthorizingEurekaClinicalClient client;
+    private final AuthorizingEurekaClinicalProxyClient client;
 
     @Inject
-    public RolesFromServiceFilter(AuthorizingEurekaClinicalClient inClient) {
+    public RolesFromServiceFilter(AuthorizingEurekaClinicalProxyClient inClient) {
         this.client = inClient;
     }
 
