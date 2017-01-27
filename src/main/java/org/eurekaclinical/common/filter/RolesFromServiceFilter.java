@@ -22,10 +22,8 @@ package org.eurekaclinical.common.filter;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -44,7 +42,9 @@ import org.eurekaclinical.standardapis.filter.RolesFilter;
 import org.eurekaclinical.standardapis.filter.RolesRequestWrapper;
 
 /**
- *
+ * To use this filter, bind an implementation of 
+ * {@link AuthorizingEurekaClinicalProxyClient} in your Guice module.
+ * 
  * @author Andrew Post
  */
 @Singleton

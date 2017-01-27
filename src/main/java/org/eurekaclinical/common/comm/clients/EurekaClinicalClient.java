@@ -29,6 +29,7 @@ import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
 import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.Boundary;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import org.eurekaclinical.common.comm.clients.cassupport.CasWebResourceWrapperFactory;
@@ -70,7 +71,7 @@ public abstract class EurekaClinicalClient {
         }
         return ApacheHttpClient4.create(clientConfig);
     }
-
+    
     protected abstract String getResourceUrl();
 
     protected WebResourceWrapper getResourceWrapper() {
@@ -199,15 +200,6 @@ public abstract class EurekaClinicalClient {
         errorIfStatusNotEqualTo(response, ClientResponse.Status.NO_CONTENT);
     }
 
-    protected void doDelete(String path, Object o) throws ClientException {
-        ClientResponse response = this.getResourceWrapper()
-                .rewritten(path, HttpMethod.PUT)
-                .accept(MediaType.APPLICATION_JSON)
-                .type(MediaType.APPLICATION_JSON)
-                .delete(ClientResponse.class, o);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.NO_CONTENT, ClientResponse.Status.ACCEPTED);
-    }
-
     protected <T> T doPost(String path, Object o, Class<T> cls) throws ClientException {
         ClientResponse response = getResourceWrapper().rewritten(path, HttpMethod.POST)
                 .accept(MediaType.APPLICATION_JSON)
@@ -246,7 +238,7 @@ public abstract class EurekaClinicalClient {
                         inputStream, MediaType.APPLICATION_OCTET_STREAM_TYPE));
         ClientResponse response = getResourceWrapper()
                 .rewritten(path, HttpMethod.POST)
-                .type(MediaType.MULTIPART_FORM_DATA_TYPE)
+                .type(Boundary.addBoundary(MediaType.MULTIPART_FORM_DATA_TYPE))
                 .post(ClientResponse.class, part);
         errorIfStatusNotEqualTo(response, ClientResponse.Status.CREATED);
     }
