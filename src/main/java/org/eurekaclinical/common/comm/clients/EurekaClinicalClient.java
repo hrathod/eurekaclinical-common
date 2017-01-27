@@ -80,9 +80,8 @@ public abstract class EurekaClinicalClient {
 
     protected void doDelete(String path) throws ClientException {
         ClientResponse response = this.getResourceWrapper()
-                .rewritten(path, HttpMethod.PUT)
+                .rewritten(path, HttpMethod.DELETE)
                 .accept(MediaType.APPLICATION_JSON)
-                .type(MediaType.APPLICATION_JSON)
                 .delete(ClientResponse.class);
         errorIfStatusNotEqualTo(response, ClientResponse.Status.NO_CONTENT, ClientResponse.Status.ACCEPTED);
     }
