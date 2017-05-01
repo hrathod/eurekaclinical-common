@@ -19,11 +19,11 @@ package org.eurekaclinical.common.comm.clients;
  * limitations under the License.
  * #L%
  */
-
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.filter.GZIPContentEncodingFilter;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
@@ -36,42 +36,59 @@ import org.eurekaclinical.common.comm.clients.cassupport.CasWebResourceWrapperFa
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Map;
 import java.util.Objects;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.ContextResolver;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * @author Andrew Post
  * @author hrathod
  */
-public abstract class EurekaClinicalClient {
+public abstract class EurekaClinicalClient implements AutoCloseable {
 
     private final WebResourceWrapperFactory webResourceWrapperFactory;
     private final Class<? extends ContextResolver<? extends ObjectMapper>> contextResolverCls;
+    private ApacheHttpClient4 client;
+    private final ClientConnectionManager clientConnManager;
 
     protected EurekaClinicalClient(Class<? extends ContextResolver<? extends ObjectMapper>> cls) {
         this.webResourceWrapperFactory = new CasWebResourceWrapperFactory();
         this.contextResolverCls = cls;
+        ApacheHttpClient4Config clientConfig = new DefaultApacheHttpClient4Config();
+        Map<String, Object> properties = clientConfig.getProperties();
+        properties.put(ApacheHttpClient4Config.PROPERTY_DISABLE_COOKIES, false);
+        this.clientConnManager = new ThreadSafeClientConnManager();
+        properties.put(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER, this.clientConnManager);
+        clientConfig.getFeatures().put(
+                JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+        if (this.contextResolverCls != null) {
+            clientConfig.getClasses().add(this.contextResolverCls);
+        }
+        ApacheHttpClient4 privateClient = ApacheHttpClient4.create(clientConfig);
+        privateClient.addFilter(new GZIPContentEncodingFilter(false));
+        this.client = privateClient;
+    }
+    
+    @Override
+    public void close() {
+        this.client.destroy();
+        this.clientConnManager.shutdown();
     }
 
     public WebResource getResource() {
-        return getRestClient(this.contextResolverCls).resource(getResourceUrl());
+        return getRestClient().resource(getResourceUrl());
     }
 
-    protected Client getRestClient(Class<? extends ContextResolver<? extends ObjectMapper>> cls) {
-        ApacheHttpClient4Config clientConfig = new DefaultApacheHttpClient4Config();
-        clientConfig.getProperties().put(ApacheHttpClient4Config.PROPERTY_DISABLE_COOKIES, false);
-        clientConfig.getFeatures().put(
-                JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-        if (cls != null) {
-            clientConfig.getClasses().add(cls);
-        }
-        return ApacheHttpClient4.create(clientConfig);
+    protected Client getRestClient() {
+        return this.client;
     }
-    
+
     protected abstract String getResourceUrl();
 
     protected WebResourceWrapper getResourceWrapper() {
@@ -84,6 +101,7 @@ public abstract class EurekaClinicalClient {
                 .accept(MediaType.APPLICATION_JSON)
                 .delete(ClientResponse.class);
         errorIfStatusNotEqualTo(response, ClientResponse.Status.NO_CONTENT, ClientResponse.Status.ACCEPTED);
+        response.close();
     }
 
     protected void doPut(String path) throws ClientException {
@@ -93,6 +111,7 @@ public abstract class EurekaClinicalClient {
                 .accept(MediaType.APPLICATION_JSON)
                 .put(ClientResponse.class);
         errorIfStatusNotEqualTo(response, ClientResponse.Status.CREATED, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
+        response.close();
     }
 
     protected void doPut(String path, Object o) throws ClientException {
@@ -102,6 +121,7 @@ public abstract class EurekaClinicalClient {
                 .accept(MediaType.APPLICATION_JSON)
                 .put(ClientResponse.class, o);
         errorIfStatusNotEqualTo(response, ClientResponse.Status.CREATED, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
+        response.close();
     }
 
     protected String doGet(String path) throws ClientException {
@@ -138,6 +158,14 @@ public abstract class EurekaClinicalClient {
         return response.getEntity(cls);
     }
 
+    /**
+     * Makes the GET call and returns the response. The response must be closed
+     * explicitly unless the <code>getEntity</code> method is called.
+     *
+     * @param path the path to call.
+     * @return the client response.
+     * @throws ClientException if an error occurs making the call.
+     */
     protected ClientResponse doGetResponse(String path) throws ClientException {
         ClientResponse response = getResourceWrapper().rewritten(path, HttpMethod.GET)
                 .accept(MediaType.APPLICATION_JSON)
@@ -189,6 +217,7 @@ public abstract class EurekaClinicalClient {
                 .type(MediaType.APPLICATION_JSON)
                 .post(ClientResponse.class);
         errorIfStatusNotEqualTo(response, ClientResponse.Status.NO_CONTENT);
+        response.close();
     }
 
     protected void doPost(String path, Object o) throws ClientException {
@@ -197,6 +226,7 @@ public abstract class EurekaClinicalClient {
                 .type(MediaType.APPLICATION_JSON)
                 .post(ClientResponse.class, o);
         errorIfStatusNotEqualTo(response, ClientResponse.Status.NO_CONTENT);
+        response.close();
     }
 
     protected <T> T doPost(String path, Object o, Class<T> cls) throws ClientException {
@@ -214,16 +244,24 @@ public abstract class EurekaClinicalClient {
                 .type(MediaType.APPLICATION_JSON)
                 .post(ClientResponse.class, o);
         errorIfStatusNotEqualTo(response, ClientResponse.Status.CREATED);
-        return response.getLocation();
+        try {
+            return response.getLocation();
+        } finally {
+            response.close();
+        }
     }
-    
+
     protected URI doPostCreate(String path, InputStream inputStream) throws ClientException {
         ClientResponse response = getResourceWrapper().rewritten(path, HttpMethod.POST)
                 .accept(MediaType.APPLICATION_JSON)
                 .type(MediaType.APPLICATION_JSON)
                 .post(ClientResponse.class, inputStream);
         errorIfStatusNotEqualTo(response, ClientResponse.Status.CREATED);
-        return response.getLocation();
+        try {
+            return response.getLocation();
+        } finally {
+            response.close();
+        }
     }
 
     protected void doPostMultipart(String path, String filename, InputStream inputStream) throws ClientException {
@@ -231,22 +269,39 @@ public abstract class EurekaClinicalClient {
         part.bodyPart(
                 new FormDataBodyPart(
                         FormDataContentDisposition
-                        .name("file")
-                        .fileName(filename)
-                        .build(),
+                                .name("file")
+                                .fileName(filename)
+                                .build(),
                         inputStream, MediaType.APPLICATION_OCTET_STREAM_TYPE));
         ClientResponse response = getResourceWrapper()
                 .rewritten(path, HttpMethod.POST)
                 .type(Boundary.addBoundary(MediaType.MULTIPART_FORM_DATA_TYPE))
                 .post(ClientResponse.class, part);
         errorIfStatusNotEqualTo(response, ClientResponse.Status.CREATED);
+        response.close();
     }
 
+    /**
+     * If there is an unexpected status code, it gets the status message, closes
+     * the response, and throws an exception.
+     *
+     * @param response the response.
+     * @param status the expected status code(s).
+     * @throws ClientException
+     */
     protected void errorIfStatusEqualTo(ClientResponse response,
             ClientResponse.Status... status) throws ClientException {
         errorIf(response, status, true);
     }
 
+    /**
+     * If there is an unexpected status code, it gets the status message, closes
+     * the response, and throws an exception.
+     *
+     * @param response the response.
+     * @param status the expected status code(s).
+     * @throws ClientException
+     */
     protected void errorIfStatusNotEqualTo(ClientResponse response,
             ClientResponse.Status... status) throws ClientException {
         errorIf(response, status, false);
@@ -257,6 +312,12 @@ public abstract class EurekaClinicalClient {
         return Long.valueOf(uriStr.substring(uriStr.lastIndexOf("/") + 1));
     }
 
+    /**
+     * If there is an unexpected status code, it gets the status message, closes
+     * the response, and throws an exception.
+     *
+     * @throws ClientException
+     */
     private void errorIf(ClientResponse response,
             ClientResponse.Status[] status, boolean bool)
             throws ClientException {
