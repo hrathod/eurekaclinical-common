@@ -24,8 +24,6 @@ import java.util.Map;
 import org.jasig.cas.client.authentication.AuthenticationFilter;
 import org.jasig.cas.client.util.AssertionThreadLocalFilter;
 import org.jasig.cas.client.util.HttpServletRequestWrapperFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
@@ -43,37 +41,26 @@ import org.jasig.cas.client.validation.Cas20ProxyReceivingTicketValidationFilter
  */
 public abstract class AbstractServletModule extends ServletModule {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(AbstractServletModule.class);
-    private final String protectedPath;
+    private static final String UNPROTECTED_PATH = "/*";
+    private static final String PROTECTED_PATH = "/protected/*";
+    
     private final ServletModuleSupport servletModuleSupport;
 
-    protected AbstractServletModule(CasEurekaClinicalProperties inProperties,
-            String inContainerPath, String inProtectedPath) {
-        if (inProtectedPath == null) {
-            throw new IllegalArgumentException("inProtectedPath cannot be null");
-        }
+    protected AbstractServletModule(CasEurekaClinicalProperties inProperties) {
         this.servletModuleSupport = new ServletModuleSupport(
                 this.getServletContext().getContextPath(), inProperties);
-        this.protectedPath = inProtectedPath;
-    }
-
-    protected void printParams(Map<String, String> inParams) {
-        for (Map.Entry<String, String> entry : inParams.entrySet()) {
-            LOGGER.debug(entry.getKey() + " -> " + entry.getValue());
-        }
     }
 
     private void setupCasSingleSignOutFilter() {
         bind(SingleSignOutFilter.class).in(Singleton.class);
-        filter("/*").through(SingleSignOutFilter.class);
+        filter(UNPROTECTED_PATH).through(SingleSignOutFilter.class);
     }
 
     private void setupCasValidationFilter() {
         bind(Cas20ProxyReceivingTicketValidationFilter.class).in(
                 Singleton.class);
         Map<String, String> params = getCasValidationFilterInitParams();
-        filter(this.servletModuleSupport.getCasProxyCallbackPath(), this.protectedPath).through(
+        filter(this.servletModuleSupport.getCasProxyCallbackPath(), PROTECTED_PATH).through(
                 Cas20ProxyReceivingTicketValidationFilter.class, params);
     }
 
@@ -81,19 +68,19 @@ public abstract class AbstractServletModule extends ServletModule {
         bind(AuthenticationFilter.class).in(Singleton.class);
         Map<String, String> params
                 = this.servletModuleSupport.getCasAuthenticationFilterInitParams();
-        filter(this.protectedPath).through(AuthenticationFilter.class, params);
+        filter(PROTECTED_PATH).through(AuthenticationFilter.class, params);
     }
 
     private void setupCasServletRequestWrapperFilter() {
         bind(HttpServletRequestWrapperFilter.class).in(Singleton.class);
         Map<String, String> params
                 = this.servletModuleSupport.getServletRequestWrapperFilterInitParams();
-        filter("/*").through(HttpServletRequestWrapperFilter.class, params);
+        filter(UNPROTECTED_PATH).through(HttpServletRequestWrapperFilter.class, params);
     }
 
     private void setupCasThreadLocalAssertionFilter() {
         bind(AssertionThreadLocalFilter.class).in(Singleton.class);
-        filter("/*").through(AssertionThreadLocalFilter.class);
+        filter(UNPROTECTED_PATH).through(AssertionThreadLocalFilter.class);
     }
 
     protected String getCasProxyCallbackPath() {

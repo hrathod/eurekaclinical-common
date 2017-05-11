@@ -35,9 +35,8 @@ import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
  */
 public abstract class AbstractAuthorizingServletModule extends AbstractServletModule {
     
-    protected AbstractAuthorizingServletModule(CasEurekaClinicalProperties inProperties,
-            String inContainerPath, String inProtectedPath) {
-        super(inProperties, inContainerPath, inProtectedPath);
+    protected AbstractAuthorizingServletModule(CasEurekaClinicalProperties inProperties) {
+        super(inProperties);
     }
 
     @Override
