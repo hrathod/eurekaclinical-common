@@ -1,6 +1,8 @@
 # Eureka! Clinical Common Web Application Framework
 Eureka! Clinical's web application development framework
 
+## Version history
+
 ## What does it do?
 
 It implements a custom web application development framework that uses best of breed components:
@@ -16,3 +18,9 @@ It supports calling these components through the following standard APIs:
 * JSR-330 (standard @Inject and @Provider annotations)
 
 See [Structure of Eureka! Clinical microservices](https://github.com/eurekaclinical/dev-wiki/wiki/Structure-of-Eureka%21-Clinical-microservices) for how to use the framework.
+
+## Building it
+The project uses the maven build tool. Typically, you build it by invoking `mvn clean install` at the command line. For simple file changes, not additions or deletions, you can usually use `mvn install`. See https://github.com/eurekaclinical/dev-wiki/wiki/Building-Eureka!-Clinical-projects for more details.
+
+## Releasing it
+First, ensure that there is no uncommitted code in your repo. Release it by invoking `mvn release:prepare` followed by `mvn release:perform`. See https://github.com/eurekaclinical/dev-wiki/wiki/Project-release-process for more details.
