@@ -14,7 +14,7 @@ It implements a custom web application development framework that uses best of b
 * Hibernate 5.0.6.Final (object-relational mapping)
 * Tomcat 7
 
-It supports calling these components through the standard APIs specified in the [Eureka! Clinical Web Application Standard APIs project](https://github.com/eurekaclinical/eurekaclinical-standard-apis).
+It supports calling these components through the standard APIs specified in and provided by the [Eureka! Clinical Web Application Standard APIs project](https://github.com/eurekaclinical/eurekaclinical-standard-apis).
 
 It extends the functionality in the [Eureka! Clinical Web Application Standard APIs project](https://github.com/eurekaclinical/eurekaclinical-standard-apis) with the following features and implementations:
 * REST communication objects for users, roles, groups and authorization templates (`org.eurekaclinical.common.comm`)
