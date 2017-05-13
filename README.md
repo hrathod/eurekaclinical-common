@@ -3,7 +3,7 @@ Eureka! Clinical's web application development framework
 
 ## Version history
 
-### 1.0
+### Version 1.0
 Implemented partial functionality, and only some parts of Eureka! Clinical used it.
 
 ## What does it do?
