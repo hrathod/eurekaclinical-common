@@ -14,11 +14,11 @@ It implements a custom web application development framework that uses best of b
 * Hibernate 5.0.6.Final (object-relational mapping)
 * Tomcat 7
 
-It supports calling these components through the following standard APIs:
-* JPA 2.1 (Java Persistence)
-* Servlet API 3.0.1
-* JAX-RS 2.0.1 (Java API for RESTful Web Services)
-* JSR-330 (standard @Inject and @Provider annotations)
+It supports calling these components through the standard APIs specified in the [Eureka! Clinical Web Application Standard APIs project](https://github.com/eurekaclinical/eurekaclinical-standard-apis).
+
+It extends the functionality in the [Eureka! Clinical Web Application Standard APIs project](https://github.com/eurekaclinical/eurekaclinical-standard-apis) with the following features and implementations:
+* REST communication objects for users, roles, groups and authorization templates (`org.eurekaclinical.common.comm`)
+
 
 See [Structure of Eureka! Clinical microservices](https://github.com/eurekaclinical/dev-wiki/wiki/Structure-of-Eureka%21-Clinical-microservices) for how to use the framework. The goal for the version 2.0 release is for all Eureka! Clinical web application components to use this framework.
 
