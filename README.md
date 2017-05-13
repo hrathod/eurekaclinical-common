@@ -20,7 +20,7 @@ It supports calling these components through the following standard APIs:
 * JAX-RS 2.0.1 (Java API for RESTful Web Services)
 * JSR-330 (standard @Inject and @Provider annotations)
 
-See [Structure of Eureka! Clinical microservices](https://github.com/eurekaclinical/dev-wiki/wiki/Structure-of-Eureka%21-Clinical-microservices) for how to use the framework. Every Eureka! Clinical web application component uses this framework.
+See [Structure of Eureka! Clinical microservices](https://github.com/eurekaclinical/dev-wiki/wiki/Structure-of-Eureka%21-Clinical-microservices) for how to use the framework. The goal for the version 2.0 release is for Eureka! Clinical web application component to use this framework.
 
 ## Building it
 The project uses the maven build tool. Typically, you build it by invoking `mvn clean install` at the command line. For simple file changes, not additions or deletions, you can usually use `mvn install`. See https://github.com/eurekaclinical/dev-wiki/wiki/Building-Eureka!-Clinical-projects for more details.
