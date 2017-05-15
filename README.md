@@ -1,6 +1,9 @@
 # Eureka! Clinical Common Web Application Framework
 Eureka! Clinical's web application development framework
 
+### Latest development release
+The latest development release is 2.0-Alpha-9.
+
 ## Version history
 
 ### Version 1.0
