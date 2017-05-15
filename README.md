@@ -1,9 +1,6 @@
 # Eureka! Clinical Common Web Application Framework ![Latest release](https://maven-badges.herokuapp.com/maven-central/org.eurekaclinical/eurekaclinical-common/badge.svg)
 Eureka! Clinical's web application development framework
 
-### Latest development release
-The latest development release is 2.0-Alpha-9.
-
 ## Version history
 
 ### Version 1.0
