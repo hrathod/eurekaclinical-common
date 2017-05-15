@@ -25,6 +25,25 @@ See [Structure of Eureka! Clinical microservices](https://github.com/eurekaclini
 ## Building it
 The project uses the maven build tool. Typically, you build it by invoking `mvn clean install` at the command line. For simple file changes, not additions or deletions, you can usually use `mvn install`. See https://github.com/eurekaclinical/dev-wiki/wiki/Building-Eureka!-Clinical-projects for more details.
 
+## Maven dependency
+### Latest development release
+```
+<dependency>
+    <groupId>org.eurekaclinical</groupId>
+    <artifactId>eurekaclinical-common</artifactId>
+    <version>2.0-Alpha-9</version>
+</dependency>
+```
+
+### Latest final release
+```
+<dependency>
+    <groupId>org.eurekaclinical</groupId>
+    <artifactId>eurekaclinical-common</artifactId>
+    <version>1.0</version>
+</dependency>
+```
+
 ## Development documentation
 * [Javadoc for latest development release](http://javadoc.io/doc/org.eurekaclinical/eurekaclinical-common) [![Javadocs](http://javadoc.io/badge/org.eurekaclinical/eurekaclinical-common.svg)](http://javadoc.io/doc/org.eurekaclinical/eurekaclinical-common)
 * [Javadoc for version 1.0](http://javadoc.io/doc/org.eurekaclinical/eurekaclinical-common/1.0)
