@@ -25,5 +25,8 @@ See [Structure of Eureka! Clinical microservices](https://github.com/eurekaclini
 ## Building it
 The project uses the maven build tool. Typically, you build it by invoking `mvn clean install` at the command line. For simple file changes, not additions or deletions, you can usually use `mvn install`. See https://github.com/eurekaclinical/dev-wiki/wiki/Building-Eureka!-Clinical-projects for more details.
 
-## Releasing it
+## Development documentation
+* [Javadoc](http://javadoc.io/doc/org.eurekaclinical/eurekaclinical-common)
+
+## Releasing it (internal)
 First, ensure that there is no uncommitted code in your repo. Release it by invoking `mvn release:prepare` followed by `mvn release:perform`. See https://github.com/eurekaclinical/dev-wiki/wiki/Project-release-process for more details.
