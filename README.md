@@ -29,5 +29,3 @@ The project uses the maven build tool. Typically, you build it by invoking `mvn 
 * [Javadoc for latest development release](http://javadoc.io/doc/org.eurekaclinical/eurekaclinical-common) [![Javadocs](http://javadoc.io/badge/org.eurekaclinical/eurekaclinical-common.svg)](http://javadoc.io/doc/org.eurekaclinical/eurekaclinical-common)
 * [Javadoc for version 1.0](http://javadoc.io/doc/org.eurekaclinical/eurekaclinical-common/1.0)
 
-## Releasing it (internal)
-First, ensure that there is no uncommitted code in your repo. Release it by invoking `mvn release:prepare` followed by `mvn release:perform`. See https://github.com/eurekaclinical/dev-wiki/wiki/Project-release-process for more details.
