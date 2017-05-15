@@ -1,4 +1,4 @@
-# Eureka! Clinical Common Web Application Framework ![Latest release](https://maven-badges.herokuapp.com/maven-central/org.eurekaclinical/eurekaclinical-common/badge.svg)
+# Eureka! Clinical Common Web Application Framework [![Latest release](https://maven-badges.herokuapp.com/maven-central/org.eurekaclinical/eurekaclinical-common/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.eurekaclinical/eurekaclinical-common)
 Eureka! Clinical's web application development framework
 
 ## Version 2.0 development series
