@@ -23,6 +23,10 @@ It supports calling these components through the standard APIs specified in and 
 
 It extends the functionality in the [Eureka! Clinical Web Application Standard APIs project](https://github.com/eurekaclinical/eurekaclinical-standard-apis) with the following features and implementations:
 * REST communication objects for users, roles, groups and authorization templates (`org.eurekaclinical.common.comm`)
+* Base classes for implementing REST clients (`org.eurekaclinical.common.comm.clients`)
+* Base classes for implementing Guice modules (`org.eurekaclinical.common.config`)
+* Servlet filters for user authorization (`org.eurekaclinical.common.filter`)
+* Servlets for login and logout; destroying a session; and proxying (`org.eurekaclinical.common.servlet`)
 
 See [Structure of Eureka! Clinical microservices](https://github.com/eurekaclinical/dev-wiki/wiki/Structure-of-Eureka%21-Clinical-microservices) for how to use the framework. The goal for the version 2.0 release is for all Eureka! Clinical web application components to use this framework.
 
