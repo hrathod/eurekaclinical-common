@@ -1,5 +1,5 @@
 # Eureka! Clinical Common Web Application Framework
-Atlanta Clinical and Translational Science Institute (ACTSI), Emory University, Atlanta, GA
+[Atlanta Clinical and Translational Science Institute (ACTSI)](http://www.actsi.org), [Emory University](http://www.emory.edu), Atlanta, GA
 
 ## What does it do?
 It implements a custom web application development framework that uses best of breed components:
