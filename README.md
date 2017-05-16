@@ -1,5 +1,5 @@
 # Eureka! Clinical Common Web Application Framework
-Eureka! Clinical's web application development framework
+Atlanta Clinical and Translational Science Institute, Emory University, Atlanta, GA
 
 ## Version 2.0 development series
 Latest release: [![Latest release](https://maven-badges.herokuapp.com/maven-central/org.eurekaclinical/eurekaclinical-common/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.eurekaclinical/eurekaclinical-common)
