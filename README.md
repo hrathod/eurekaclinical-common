@@ -1,18 +1,7 @@
 # Eureka! Clinical Common Web Application Framework
 Atlanta Clinical and Translational Science Institute (ACTSI), Emory University, Atlanta, GA
 
-## Version 2.0 development series
-Latest release: [![Latest release](https://maven-badges.herokuapp.com/maven-central/org.eurekaclinical/eurekaclinical-common/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.eurekaclinical/eurekaclinical-common)
-
-The goal of the 2.0 series is to have sufficient functionality for all Eureka! Clinical web applications to depend on eurekaclinical-common.
-
-## Version history
-
-### Version 1.0
-Implemented partial functionality, and only some parts of Eureka! Clinical used it.
-
 ## What does it do?
-
 It implements a custom web application development framework that uses best of breed components:
 * Google Guice 3.0 (dependency injection)
 * Jersey 1.17.1 (REST)
@@ -29,6 +18,16 @@ It extends the functionality in the [Eureka! Clinical Web Application Standard A
 * Servlets for login and logout; destroying a session; and proxying (`org.eurekaclinical.common.servlet`)
 
 See [Structure of Eureka! Clinical microservices](https://github.com/eurekaclinical/dev-wiki/wiki/Structure-of-Eureka%21-Clinical-microservices) for how to use the framework. The goal for the version 2.0 release is for all Eureka! Clinical web application components to use this framework.
+
+## Version 2.0 development series
+Latest release: [![Latest release](https://maven-badges.herokuapp.com/maven-central/org.eurekaclinical/eurekaclinical-common/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.eurekaclinical/eurekaclinical-common)
+
+The goal of the 2.0 series is to have sufficient functionality for all Eureka! Clinical web applications to depend on eurekaclinical-common.
+
+## Version history
+
+### Version 1.0
+Implemented partial functionality, and only some parts of Eureka! Clinical used it.
 
 ## Build requirements
 * [Oracle Java JDK 8](http://www.oracle.com/technetwork/java/javase/overview/index.html)
