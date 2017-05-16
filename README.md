@@ -24,8 +24,15 @@ It supports calling these components through the standard APIs specified in and 
 It extends the functionality in the [Eureka! Clinical Web Application Standard APIs project](https://github.com/eurekaclinical/eurekaclinical-standard-apis) with the following features and implementations:
 * REST communication objects for users, roles, groups and authorization templates (`org.eurekaclinical.common.comm`)
 
-
 See [Structure of Eureka! Clinical microservices](https://github.com/eurekaclinical/dev-wiki/wiki/Structure-of-Eureka%21-Clinical-microservices) for how to use the framework. The goal for the version 2.0 release is for all Eureka! Clinical web application components to use this framework.
+
+## Build requirements
+* [Oracle Java JDK 8](http://www.oracle.com/technetwork/java/javase/overview/index.html)
+* [Maven 3.2.5 or greater](https://maven.apache.org)
+
+## Runtime requirements
+* [Oracle Java JRE 8](http://www.oracle.com/technetwork/java/javase/overview/index.html)
+* [Tomcat 7](https://tomcat.apache.org)
 
 ## Building it
 The project uses the maven build tool. Typically, you build it by invoking `mvn clean install` at the command line. For simple file changes, not additions or deletions, you can usually use `mvn install`. See https://github.com/eurekaclinical/dev-wiki/wiki/Building-Eureka!-Clinical-projects for more details.
