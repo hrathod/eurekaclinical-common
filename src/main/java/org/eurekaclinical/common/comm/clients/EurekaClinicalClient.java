@@ -32,7 +32,6 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.Boundary;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
-import org.eurekaclinical.common.comm.clients.cassupport.CasWebResourceWrapperFactory;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -70,9 +69,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
         if (this.contextResolverCls != null) {
             clientConfig.getClasses().add(this.contextResolverCls);
         }
-        ApacheHttpClient4 privateClient = ApacheHttpClient4.create(clientConfig);
-        privateClient.addFilter(new GZIPContentEncodingFilter(false));
-        this.client = privateClient;
+        this.client = ApacheHttpClient4.create(clientConfig);
+        this.client.addFilter(new GZIPContentEncodingFilter(false));
     }
     
     @Override
@@ -81,20 +79,12 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
         this.clientConnManager.shutdown();
     }
 
-    public WebResource getResource() {
-        return getRestClient().resource(getResourceUrl());
-    }
-
-    protected Client getRestClient() {
-        return this.client;
-    }
-
     protected abstract String getResourceUrl();
 
-    protected WebResourceWrapper getResourceWrapper() {
-        return this.webResourceWrapperFactory.getInstance(getResource());
+    private WebResourceWrapper getResourceWrapper() {
+        return this.webResourceWrapperFactory.getInstance(this.client, getResourceUrl());
     }
-
+    
     protected void doDelete(String path) throws ClientException {
         ClientResponse response = this.getResourceWrapper()
                 .rewritten(path, HttpMethod.DELETE)

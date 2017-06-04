@@ -26,26 +26,26 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Andrew Post
  */
-public abstract class AbstractWebResourceWrapper implements WebResourceWrapper {
+abstract class AbstractWebResourceWrapper implements WebResourceWrapper {
 
-	private WebResource webResource;
+    private WebResource webResource;
 
-	public AbstractWebResourceWrapper(WebResource webResource) {
-		this.webResource = webResource;
-	}
+    AbstractWebResourceWrapper(WebResource webResource) {
+        this.webResource = webResource;
+    }
 
-	protected WebResource getWebResource() {
-		return webResource;
-	}
-	
-	@Override
-	public WebResource rewritten(String path, String method) throws ClientException {
-		return rewritten(path, method, null);
-	}
+    protected WebResource getWebResource() {
+        return webResource;
+    }
 
-	@Override
-	public WebResource rewritten(String path, String method, MultivaluedMap<String, String> queryParams) throws ClientException {
-		return webResource.path(path);
-	}
+    @Override
+    public WebResource rewritten(String path, String method) throws ClientException {
+        return rewritten(path, method, null);
+    }
+
+    @Override
+    public WebResource rewritten(String path, String method, MultivaluedMap<String, String> queryParams) throws ClientException {
+        return webResource.path(path);
+    }
 
 }

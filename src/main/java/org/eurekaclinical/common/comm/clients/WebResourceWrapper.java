@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.eurekaclinical.common.comm.clients;
 
 /*
@@ -30,9 +26,9 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Andrew Post
  */
-public interface WebResourceWrapper {
+interface WebResourceWrapper {
 
-	WebResource rewritten(String path, String method) throws ClientException;
+    WebResource rewritten(String path, String method) throws ClientException;
 
-	WebResource rewritten(String path, String method, MultivaluedMap<String, String> queryParams) throws ClientException;
+    WebResource rewritten(String path, String method, MultivaluedMap<String, String> queryParams) throws ClientException;
 }

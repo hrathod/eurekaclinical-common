@@ -19,14 +19,14 @@ package org.eurekaclinical.common.comm.clients;
  * limitations under the License.
  * #L%
  */
-
-import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.client.apache4.ApacheHttpClient4;
 
 /**
  *
  * @author Andrew Post
  */
 public interface WebResourceWrapperFactory {
-	WebResourceWrapper getInstance(WebResource webResource);
-	
+
+    WebResourceWrapper getInstance(ApacheHttpClient4 client, String resourceUrl);
+
 }
