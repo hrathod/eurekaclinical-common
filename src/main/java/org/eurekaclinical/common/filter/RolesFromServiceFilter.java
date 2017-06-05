@@ -20,6 +20,7 @@ package org.eurekaclinical.common.filter;
  * #L%
  */
 
+import com.google.inject.Injector;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.HashSet;
@@ -50,11 +51,11 @@ import org.eurekaclinical.standardapis.filter.RolesRequestWrapper;
 @Singleton
 public class RolesFromServiceFilter implements RolesFilter {
 
-    private final AuthorizingEurekaClinicalProxyClient client;
+    private final Injector injector;
 
     @Inject
-    public RolesFromServiceFilter(AuthorizingEurekaClinicalProxyClient inClient) {
-        this.client = inClient;
+    public RolesFromServiceFilter(Injector inInjector) {
+        this.injector = inInjector;
     }
 
     @Override
@@ -66,6 +67,7 @@ public class RolesFromServiceFilter implements RolesFilter {
         HttpServletRequest servletRequest = (HttpServletRequest) inRequest;
         String username = servletRequest.getRemoteUser();
         if (username != null) {
+            AuthorizingEurekaClinicalProxyClient client = this.injector.getInstance(AuthorizingEurekaClinicalProxyClient.class);
             try {
                 HttpSession session = servletRequest.getSession(false);
                 assert session != null : "session should not be null";
@@ -73,8 +75,8 @@ public class RolesFromServiceFilter implements RolesFilter {
                 Principal principal = servletRequest.getUserPrincipal();
                 assert principal != null : "principal should not be null";
                 
-                List<Role> roles = this.client.getRoles();//eureka project roles table
-                User user = this.client.getMe();
+                List<Role> roles = client.getRoles();//eureka project roles table
+                User user = client.getMe();
                 List<Long> roleIds = user.getRoles();
 
                 Set<String> roleNames = new HashSet<>();

@@ -37,6 +37,8 @@ import javax.inject.Singleton;
 @Singleton
 public class LoginServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
+
     @Inject
     public LoginServlet() {
     }
