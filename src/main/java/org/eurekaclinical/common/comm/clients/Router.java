@@ -20,14 +20,14 @@ package org.eurekaclinical.common.comm.clients;
  * #L%
  */
 
+import com.google.inject.servlet.SessionScoped;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 /**
  *
  * @author Andrew Post
  */
-@Singleton
+@SessionScoped
 public class Router {
     private final Route[] routes;
 

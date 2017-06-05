@@ -20,6 +20,11 @@ package org.eurekaclinical.common.comm.clients;
  * #L%
  */
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import java.net.HttpCookie;
+import java.net.URI;
+import java.util.Date;
+import java.util.List;
+import org.apache.http.cookie.Cookie;
 
 /**
  *
@@ -28,9 +33,37 @@ import com.sun.jersey.client.apache4.ApacheHttpClient4;
 class CasWebResourceWrapperFactory implements WebResourceWrapperFactory {
 
     @Override
-    public WebResourceWrapper getInstance(ApacheHttpClient4 client, String resourceUrl) {
-        System.out.println(client.getClientHandler().getCookieStore().getCookies());
-        return new CasWebResourceWrapper(client.resource(resourceUrl));
+    public WebResourceWrapper getInstance(ApacheHttpClient4 client, URI resourceUrl) {
+        if (hasCookieFor(client, resourceUrl)) {
+            return new DefaultWebResourceWrapper(client.resource(resourceUrl));
+        } else {
+            return new CasWebResourceWrapper(client.resource(resourceUrl));
+        }
+    }
+
+    private boolean hasCookieFor(ApacheHttpClient4 client, URI resourceUrl) {
+        String path = resourceUrl.getPath();
+        if (!path.endsWith("/")) {
+            path += "/";
+        }
+        List<Cookie> cookies = client.getClientHandler().getCookieStore().getCookies();
+        for (Cookie cookie : cookies) {
+            if ("JSESSIONID".equals(cookie.getName())
+                    && domainMatches(cookie.getDomain(), resourceUrl.getHost())
+                    && cookie.getPath().equals(path)
+                    && (cookie.getExpiryDate() == null || cookie.getExpiryDate().after(new Date()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static boolean domainMatches(String domain, String host) {
+        if ("localhost".equalsIgnoreCase(domain)) {
+            return host.equalsIgnoreCase("localhost");
+        } else {
+            return HttpCookie.domainMatches(domain, host);
+        }
     }
 
 }

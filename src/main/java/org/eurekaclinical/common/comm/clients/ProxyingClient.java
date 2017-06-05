@@ -20,16 +20,16 @@ package org.eurekaclinical.common.comm.clients;
  * #L%
  */
 
+import com.google.inject.servlet.SessionScoped;
 import java.net.URI;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.ws.rs.core.MultivaluedMap;
 
 /**
  *
  * @author Andrew Post
  */
-@Singleton
+@SessionScoped
 public class ProxyingClient {
 
     private final Router config;

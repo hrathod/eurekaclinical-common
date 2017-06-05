@@ -19,15 +19,26 @@ package org.eurekaclinical.common.comm.clients;
  * limitations under the License.
  * #L%
  */
-import com.sun.jersey.client.apache4.ApacheHttpClient4;
-import java.net.URI;
+import javax.ws.rs.core.MultivaluedMap;
+
+import com.sun.jersey.api.client.WebResource;
 
 /**
  *
  * @author Andrew Post
  */
-public interface WebResourceWrapperFactory {
+class DefaultWebResourceWrapper extends AbstractWebResourceWrapper {
 
-    WebResourceWrapper getInstance(ApacheHttpClient4 client, URI resourceUrl);
+    DefaultWebResourceWrapper(WebResource inWebResource) {
+        super(inWebResource);
+    }
 
+    @Override
+    public WebResource rewritten(String path, String method, MultivaluedMap<String, String> queryParams) throws ClientException {
+        WebResource webResource = getWebResource();
+        if (queryParams != null) {
+            webResource = webResource.queryParams(queryParams);
+        }
+        return webResource.path(path);
+    }
 }

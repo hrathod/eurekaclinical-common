@@ -19,6 +19,7 @@ package org.eurekaclinical.common.servlet;
  * limitations under the License.
  * #L%
  */
+import com.google.inject.Injector;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.io.BufferedReader;
 import org.slf4j.Logger;
@@ -49,11 +50,11 @@ public class ProxyServlet extends HttpServlet {
             .getLogger(ProxyServlet.class);
     private static final long serialVersionUID = 1L;
 
-    private final ProxyingClient client;
+    private final Injector injector;
 
     @Inject
-    public ProxyServlet(ProxyingClient inClient) {
-        this.client = inClient;
+    public ProxyServlet(Injector inInjector) {
+        this.injector = inInjector;
     }
 
     @Override
@@ -62,7 +63,7 @@ public class ProxyServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
-        LOGGER.debug("ProxyServlet - PUT");
+        ProxyingClient client = this.injector.getInstance(ProxyingClient.class);
 
         String content = extractContent(servletRequest);
         String path = servletRequest.getPathInfo();
@@ -78,7 +79,7 @@ public class ProxyServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
             throws IOException {
-        LOGGER.debug("ProxyServlet - POST");
+        ProxyingClient client = this.injector.getInstance(ProxyingClient.class);
 
         String content = extractContent(servletRequest);
         String path = servletRequest.getPathInfo();
@@ -99,7 +100,7 @@ public class ProxyServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
             throws IOException {
-        LOGGER.debug("ProxyServlet - DELETE");
+        ProxyingClient client = this.injector.getInstance(ProxyingClient.class);
 
         String path = servletRequest.getPathInfo();
 
@@ -115,7 +116,7 @@ public class ProxyServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
             throws IOException {
-        LOGGER.debug("ProxyServlet - GET");
+        ProxyingClient client = this.injector.getInstance(ProxyingClient.class);
 
         String path = servletRequest.getPathInfo();
 

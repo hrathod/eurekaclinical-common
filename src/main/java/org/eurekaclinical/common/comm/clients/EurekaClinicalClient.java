@@ -79,7 +79,7 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
         this.clientConnManager.shutdown();
     }
 
-    protected abstract String getResourceUrl();
+    protected abstract URI getResourceUrl();
 
     private WebResourceWrapper getResourceWrapper() {
         return this.webResourceWrapperFactory.getInstance(this.client, getResourceUrl());
