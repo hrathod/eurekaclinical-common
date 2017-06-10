@@ -146,7 +146,7 @@ public class ProxyServlet extends HttpServlet {
         InputStream inputStream = servletRequest.getInputStream();
         String charEncoding = servletRequest.getCharacterEncoding();
         StringBuilder buf = new StringBuilder();
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(inputStream, charEncoding))) {
+        try (BufferedReader r = new BufferedReader(charEncoding != null ? new InputStreamReader(inputStream, charEncoding) : new InputStreamReader(inputStream))) {
             String line;
             while ((line = r.readLine()) != null) {
                 buf.append(line);
