@@ -254,7 +254,7 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
         }
     }
 
-    protected void doPostMultipart(String path, String filename, InputStream inputStream) throws ClientException {
+    protected URI doPostMultipart(String path, String filename, InputStream inputStream) throws ClientException {
         FormDataMultiPart part = new FormDataMultiPart();
         part.bodyPart(
                 new FormDataBodyPart(
@@ -268,7 +268,11 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
                 .type(Boundary.addBoundary(MediaType.MULTIPART_FORM_DATA_TYPE))
                 .post(ClientResponse.class, part);
         errorIfStatusNotEqualTo(response, ClientResponse.Status.CREATED);
-        response.close();
+        try {
+            return response.getLocation();
+        } finally {
+            response.close();
+        }
     }
 
     /**
