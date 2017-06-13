@@ -21,9 +21,6 @@ package org.eurekaclinical.common.servlet;
  */
 import com.google.inject.Injector;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import java.io.BufferedReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -31,12 +28,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.core.HttpHeaders;
 import org.eurekaclinical.common.comm.clients.ClientException;
 import org.eurekaclinical.common.comm.clients.ProxyingClient;
 
@@ -46,9 +45,20 @@ import org.eurekaclinical.common.comm.clients.ProxyingClient;
 @Singleton
 public class ProxyServlet extends HttpServlet {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(ProxyServlet.class);
     private static final long serialVersionUID = 1L;
+
+    private static final Set<String> requestHeadersToExclude;
+
+    static {
+        requestHeadersToExclude = new HashSet<>();
+        for (String header : new String[]{
+            "Connection", "Keep-Alive", "Proxy-Authenticate", "Proxy-Authorization",
+            "TE", "Trailers", "Transfer-Encoding", "Upgrade", HttpHeaders.CONTENT_LENGTH,
+            HttpHeaders.COOKIE
+        }) {
+            requestHeadersToExclude.add(header.toUpperCase());
+        }
+    }
 
     private final Injector injector;
 
@@ -64,12 +74,10 @@ public class ProxyServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
         ProxyingClient client = this.injector.getInstance(ProxyingClient.class);
-
-        String content = extractContent(servletRequest);
         String path = servletRequest.getPathInfo();
-
+        MultivaluedMap<String, String> requestHeaders = extractRequestHeaders(servletRequest);
         try {
-            client.proxyPut(path, content);
+            client.proxyPut(path, servletRequest.getInputStream(), requestHeaders);
         } catch (ClientException e) {
             servletResponse.setStatus(e.getResponseStatus().getStatusCode());
             servletResponse.getOutputStream().print(e.getMessage());
@@ -80,12 +88,10 @@ public class ProxyServlet extends HttpServlet {
     protected void doPost(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
             throws IOException {
         ProxyingClient client = this.injector.getInstance(ProxyingClient.class);
-
-        String content = extractContent(servletRequest);
         String path = servletRequest.getPathInfo();
-
+        MultivaluedMap<String, String> requestHeaders = extractRequestHeaders(servletRequest);
         try {
-            URI created = client.proxyPost(path, content);
+            URI created = client.proxyPost(path, servletRequest.getInputStream(), requestHeaders);
             if (created != null) {
                 servletResponse.setStatus(HttpServletResponse.SC_CREATED);
                 servletResponse.setHeader("Location", created.toString());
@@ -101,11 +107,10 @@ public class ProxyServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
             throws IOException {
         ProxyingClient client = this.injector.getInstance(ProxyingClient.class);
-
         String path = servletRequest.getPathInfo();
-
+        MultivaluedMap<String, String> requestHeaders = extractRequestHeaders(servletRequest);
         try {
-            client.proxyDelete(path);
+            client.proxyDelete(path, requestHeaders);
         } catch (ClientException e) {
             servletResponse.setStatus(e.getResponseStatus().getStatusCode());
             servletResponse.getOutputStream().print(e.getMessage());
@@ -117,13 +122,11 @@ public class ProxyServlet extends HttpServlet {
     protected void doGet(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
             throws IOException {
         ProxyingClient client = this.injector.getInstance(ProxyingClient.class);
-
         String path = servletRequest.getPathInfo();
-
+        MultivaluedMap<String, String> requestHeaders = extractRequestHeaders(servletRequest);
         try {
             Map<String, String[]> parameterMap = servletRequest.getParameterMap();
-            MultivaluedMap<String, String> multivaluedMap = toMultivaluedMap(parameterMap);
-            String response = client.proxyGet(path, multivaluedMap);
+            String response = client.proxyGet(path, toMultivaluedMap(parameterMap), requestHeaders);
             servletResponse.getWriter().write(response);
         } catch (ClientException e) {
             servletResponse.setStatus(e.getResponseStatus().getStatusCode());
@@ -142,19 +145,34 @@ public class ProxyServlet extends HttpServlet {
         return queryParams;
     }
 
-    private static String extractContent(HttpServletRequest servletRequest) throws IOException {
-        InputStream inputStream = servletRequest.getInputStream();
-        String charEncoding = servletRequest.getCharacterEncoding();
-        StringBuilder buf = new StringBuilder();
-        try (BufferedReader r = new BufferedReader(charEncoding != null ? new InputStreamReader(inputStream, charEncoding) : new InputStreamReader(inputStream))) {
-            String line;
-            while ((line = r.readLine()) != null) {
-                buf.append(line);
+    private MultivaluedMap<String, String> extractRequestHeaders(HttpServletRequest servletRequest) {
+        MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+        for (Enumeration<String> enm = servletRequest.getHeaderNames(); enm.hasMoreElements();) {
+            String headerName = enm.nextElement();
+            for (Enumeration<String> enm2 = servletRequest.getHeaders(headerName); enm2.hasMoreElements();) {
+                String nextValue = enm2.nextElement();
+                if (!requestHeadersToExclude.contains(headerName.toUpperCase())) {
+                    headers.add(headerName, nextValue);
+                }
             }
         }
-        String content = buf.toString();
-        LOGGER.debug("json: {}", content);
-        return content;
+        addXForwardedForHeader(servletRequest, headers);
+        return headers;
     }
+    
+    private void addXForwardedForHeader(HttpServletRequest servletRequest,
+            MultivaluedMap<String, String> headers) {
+        String forHeaderName = "X-Forwarded-For";
+        String forHeader = servletRequest.getRemoteAddr();
+        String existingForHeader = servletRequest.getHeader(forHeaderName);
+        if (existingForHeader != null) {
+            forHeader = existingForHeader + ", " + forHeader;
+        }
+        headers.add(forHeaderName, forHeader);
 
+        String protoHeaderName = "X-Forwarded-Proto";
+        String protoHeader = servletRequest.getScheme();
+        headers.add(protoHeaderName, protoHeader);
+
+    }
 }

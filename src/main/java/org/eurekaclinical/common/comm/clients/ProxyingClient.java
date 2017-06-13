@@ -21,6 +21,7 @@ package org.eurekaclinical.common.comm.clients;
  */
 
 import com.google.inject.servlet.SessionScoped;
+import java.io.InputStream;
 import java.net.URI;
 import javax.inject.Inject;
 import javax.ws.rs.core.MultivaluedMap;
@@ -38,41 +39,49 @@ public class ProxyingClient {
     public ProxyingClient(Router inConfig) {
         this.config = inConfig;
     }
-
-    public URI proxyPost(final String path, final String json)
+    
+    public URI proxyPostMultipart(final String path, final InputStream inInputStream, MultivaluedMap<String, String> headers)
             throws ClientException {
         ReplacementPathAndClient replacementPathAndClient = this.config.getReplacementPathAndClient(path);
         EurekaClinicalClient client = replacementPathAndClient.getClient();
         String replacementPath = replacementPathAndClient.getPath();
-        return client.doPostCreate(replacementPath, json);
+        return client.doPostCreateMultipart(replacementPath, inInputStream, headers);
     }
 
-    public void proxyDelete(final String path)
+    public URI proxyPost(final String path, final InputStream inputStream, MultivaluedMap<String, String> headers)
             throws ClientException {
         ReplacementPathAndClient replacementPathAndClient = this.config.getReplacementPathAndClient(path);
         EurekaClinicalClient client = replacementPathAndClient.getClient();
         String replacementPath = replacementPathAndClient.getPath();
-        client.doDelete(replacementPath);
+        return client.doPostCreate(replacementPath, inputStream, headers);
     }
 
-    public void proxyPut(final String path, final String json)
+    public void proxyDelete(final String path, MultivaluedMap<String, String> headers)
             throws ClientException {
         ReplacementPathAndClient replacementPathAndClient = this.config.getReplacementPathAndClient(path);
         EurekaClinicalClient client = replacementPathAndClient.getClient();
         String replacementPath = replacementPathAndClient.getPath();
-        client.doPut(replacementPath, json);
+        client.doDelete(replacementPath, headers);
     }
 
-    public String proxyGet(final String path, MultivaluedMap<String, String> queryParams)
+    public void proxyPut(final String path, final InputStream inputStream, MultivaluedMap<String, String> headers)
+            throws ClientException {
+        ReplacementPathAndClient replacementPathAndClient = this.config.getReplacementPathAndClient(path);
+        EurekaClinicalClient client = replacementPathAndClient.getClient();
+        String replacementPath = replacementPathAndClient.getPath();
+        client.doPut(replacementPath, inputStream, headers);
+    }
+
+    public String proxyGet(final String path, MultivaluedMap<String, String> queryParams, MultivaluedMap<String, String> headers)
             throws ClientException {
         ReplacementPathAndClient replacementPathAndClient = this.config.getReplacementPathAndClient(path);
         EurekaClinicalClient client = replacementPathAndClient.getClient();
         String replacementPath = replacementPathAndClient.getPath();
         if (queryParams == null) {
-            return client.doGet(replacementPath);
+            return client.doGet(replacementPath, headers);
         } else {
-            return client.doGet(replacementPath, queryParams);
+            return client.doGet(replacementPath, queryParams, headers);
         }
     }
-
+    
 }
