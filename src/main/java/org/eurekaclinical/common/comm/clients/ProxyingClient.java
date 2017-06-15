@@ -19,10 +19,10 @@ package org.eurekaclinical.common.comm.clients;
  * limitations under the License.
  * #L%
  */
-
 import com.google.inject.servlet.SessionScoped;
+import com.sun.jersey.api.client.ClientResponse;
 import java.io.InputStream;
-import java.net.URI;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -39,49 +39,37 @@ public class ProxyingClient {
     public ProxyingClient(Router inConfig) {
         this.config = inConfig;
     }
-    
-    public URI proxyPostMultipart(final String path, final InputStream inInputStream, MultivaluedMap<String, String> headers)
+
+    public ProxyResponse proxyPost(String path, InputStream inputStream,MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers)
             throws ClientException {
         ReplacementPathAndClient replacementPathAndClient = this.config.getReplacementPathAndClient(path);
         EurekaClinicalClient client = replacementPathAndClient.getClient();
         String replacementPath = replacementPathAndClient.getPath();
-        return client.doPostCreateMultipart(replacementPath, inInputStream, headers);
+        return new ProxyResponse(client.doPostForProxy(replacementPath, inputStream, parameterMap, headers), replacementPathAndClient);
     }
 
-    public URI proxyPost(final String path, final InputStream inputStream, MultivaluedMap<String, String> headers)
+    public ProxyResponse proxyDelete(String path, MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers)
             throws ClientException {
         ReplacementPathAndClient replacementPathAndClient = this.config.getReplacementPathAndClient(path);
         EurekaClinicalClient client = replacementPathAndClient.getClient();
         String replacementPath = replacementPathAndClient.getPath();
-        return client.doPostCreate(replacementPath, inputStream, headers);
+        return new ProxyResponse(client.doDeleteForProxy(replacementPath, parameterMap, headers), replacementPathAndClient);
     }
 
-    public void proxyDelete(final String path, MultivaluedMap<String, String> headers)
+    public ProxyResponse proxyPut(String path, InputStream inputStream, MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers)
             throws ClientException {
         ReplacementPathAndClient replacementPathAndClient = this.config.getReplacementPathAndClient(path);
         EurekaClinicalClient client = replacementPathAndClient.getClient();
         String replacementPath = replacementPathAndClient.getPath();
-        client.doDelete(replacementPath, headers);
+        return new ProxyResponse(client.doPutForProxy(replacementPath, inputStream, parameterMap, headers), replacementPathAndClient);
     }
 
-    public void proxyPut(final String path, final InputStream inputStream, MultivaluedMap<String, String> headers)
+    public ProxyResponse proxyGet(String path, MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers)
             throws ClientException {
         ReplacementPathAndClient replacementPathAndClient = this.config.getReplacementPathAndClient(path);
         EurekaClinicalClient client = replacementPathAndClient.getClient();
         String replacementPath = replacementPathAndClient.getPath();
-        client.doPut(replacementPath, inputStream, headers);
+        return new ProxyResponse(client.doGetForProxy(replacementPath, parameterMap, headers), replacementPathAndClient);
     }
 
-    public String proxyGet(final String path, MultivaluedMap<String, String> queryParams, MultivaluedMap<String, String> headers)
-            throws ClientException {
-        ReplacementPathAndClient replacementPathAndClient = this.config.getReplacementPathAndClient(path);
-        EurekaClinicalClient client = replacementPathAndClient.getClient();
-        String replacementPath = replacementPathAndClient.getPath();
-        if (queryParams == null) {
-            return client.doGet(replacementPath, headers);
-        } else {
-            return client.doGet(replacementPath, queryParams, headers);
-        }
-    }
-    
 }

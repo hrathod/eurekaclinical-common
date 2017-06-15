@@ -1,5 +1,7 @@
 package org.eurekaclinical.common.comm.clients;
 
+import java.util.regex.Pattern;
+
 /*-
  * #%L
  * Eureka! Clinical Common
@@ -24,21 +26,27 @@ package org.eurekaclinical.common.comm.clients;
  *
  * @author Andrew Post
  */
-class ReplacementPathAndClient {
+public class ReplacementPathAndClient {
     private final String path;
     private final EurekaClinicalClient client;
+    private final Pattern pattern;
 
-    ReplacementPathAndClient(String inPath, EurekaClinicalClient inClient) {
+    ReplacementPathAndClient(String inPath, EurekaClinicalClient inClient, Pattern inPattern) {
         this.path = inPath;
         this.client = inClient;
+        this.pattern = inPattern;
     }
 
-    String getPath() {
+    public String getPath() {
         return path;
     }
-
-    EurekaClinicalClient getClient() {
+    
+    public EurekaClinicalClient getClient() {
         return client;
+    }
+    
+    public String revertPath(String proxyResourceUrl) {
+        return this.pattern.matcher(this.client.getResourceUrl().toString()).replaceFirst(proxyResourceUrl);
     }
     
 }

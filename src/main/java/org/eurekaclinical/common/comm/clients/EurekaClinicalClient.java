@@ -54,7 +54,7 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
 
     private final WebResourceWrapperFactory webResourceWrapperFactory;
     private final Class<? extends ContextResolver<? extends ObjectMapper>> contextResolverCls;
-    private ApacheHttpClient4 client;
+    private final ApacheHttpClient4 client;
     private final ClientConnectionManager clientConnManager;
 
     /**
@@ -366,7 +366,7 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
         errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
         return response.getEntity(genericType);
     }
-
+    
     /**
      * Submits a form and gets back a JSON object. Adds appropriate Accepts and
      * Content Type headers.
@@ -696,7 +696,7 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @throws ClientException if a status code other than 200 (OK) and 
      * 201 (Created) is returned.
      */
-    public URI doPostCreateMultipart(String path, FormDataMultiPart formDataMultiPart) throws ClientException {
+    protected URI doPostCreateMultipart(String path, FormDataMultiPart formDataMultiPart) throws ClientException {
         ClientResponse response = getResourceWrapper()
                 .rewritten(path, HttpMethod.POST)
                 .type(Boundary.addBoundary(MediaType.MULTIPART_FORM_DATA_TYPE))
@@ -708,6 +708,76 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
         } finally {
             response.close();
         }
+    }
+    
+    /**
+     * Passes a new resource, form or other POST body to a proxied server.
+     *
+     * @param path the path to the resource. Cannot be <code>null</code>.
+     * @param inputStream the contents of the POST body. Cannot be <code>null</code>.
+     * @param headers any request headers to add.
+     * @return ClientResponse the proxied server's response information.
+     *
+     * @throws ClientException if the proxied server responds with an "error"
+     * status code, which is dependent on the server being called.
+     * @see #getResourceUrl() for the URL of the proxied server.
+     */
+    protected ClientResponse doPostForProxy(String path, InputStream inputStream, MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers) throws ClientException {
+        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST, parameterMap).getRequestBuilder();
+        copyHeaders(headers, requestBuilder);
+        return requestBuilder.post(ClientResponse.class, inputStream);
+    }
+    
+    /**
+     * Passes a resource update to a proxied server.
+     *
+     * @param path the path to the resource. Cannot be <code>null</code>.
+     * @param inputStream the contents of the update. Cannot be <code>null</code>.
+     * @param headers any request headers to add.
+     * @return ClientResponse the proxied server's response information.
+     *
+     * @throws ClientException if the proxied server responds with an "error"
+     * status code, which is dependent on the server being called.
+     * @see #getResourceUrl() for the URL of the proxied server.
+     */
+    protected ClientResponse doPutForProxy(String path, InputStream inputStream, MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers) throws ClientException {
+        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.PUT, parameterMap).getRequestBuilder();
+        copyHeaders(headers, requestBuilder);
+        return requestBuilder.put(ClientResponse.class, inputStream);
+    }
+    
+    /**
+     * Gets a resource from a proxied server.
+     *
+     * @param path the path to the resource. Cannot be <code>null</code>.
+     * @param headers any request headers to add.
+     * @return ClientResponse the proxied server's response information.
+     *
+     * @throws ClientException if the proxied server responds with an "error"
+     * status code, which is dependent on the server being called.
+     * @see #getResourceUrl() for the URL of the proxied server.
+     */
+    protected ClientResponse doGetForProxy(String path, MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers) throws ClientException {
+        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET, parameterMap).getRequestBuilder();
+        copyHeaders(headers, requestBuilder);
+        return requestBuilder.get(ClientResponse.class);
+    }
+    
+    /**
+     * Deletes a resource from a proxied server.
+     *
+     * @param path the path to the resource. Cannot be <code>null</code>.
+     * @param headers any request headers to add.
+     * @return ClientResponse the proxied server's response information.
+     *
+     * @throws ClientException if the proxied server responds with an "error"
+     * status code, which is dependent on the server being called.
+     * @see #getResourceUrl() for the URL of the proxied server.
+     */
+    protected ClientResponse doDeleteForProxy(String path, MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers) throws ClientException {
+        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.DELETE, parameterMap).getRequestBuilder();
+        copyHeaders(headers, requestBuilder);
+        return requestBuilder.delete(ClientResponse.class);
     }
 
     /**
@@ -898,6 +968,18 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
         }
         if (!hasAccept) {
             requestBuilder = requestBuilder.accept(MediaType.APPLICATION_JSON);
+        }
+        return requestBuilder;
+    }
+    
+    private static WebResource.Builder copyHeaders(MultivaluedMap<String, String> headers, WebResource.Builder requestBuilder) {
+        if (headers != null) {
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                String key = entry.getKey();
+                for (String val : entry.getValue()) {
+                    requestBuilder = requestBuilder.header(key, val);
+                }
+            }
         }
         return requestBuilder;
     }

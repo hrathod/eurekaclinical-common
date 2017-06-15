@@ -19,8 +19,10 @@ package org.eurekaclinical.common.comm.clients;
  * limitations under the License.
  * #L%
  */
-
 import com.google.inject.servlet.SessionScoped;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 import javax.inject.Inject;
 
 /**
@@ -29,21 +31,31 @@ import javax.inject.Inject;
  */
 @SessionScoped
 public class Router {
+
     private final Route[] routes;
+    private Map<EurekaClinicalClient, Pattern> patterns;
 
     @Inject
     public Router(RouterTable routesParser) throws RouterTableLoadException {
         this.routes = routesParser.load();
+        this.patterns = new HashMap<>();
+        for (Route route : this.routes) {
+            EurekaClinicalClient client = route.getClient();
+            if (this.patterns.containsKey(client)) {
+                this.patterns.put(client, Pattern.compile(client.getResourceUrl().toString()));
+            }
+        }
     }
-    
+
     public ReplacementPathAndClient getReplacementPathAndClient(String path) {
         if (path == null) {
             throw new IllegalArgumentException("path cannot be null");
         }
         for (Route route : this.routes) {
             String replacementPath = route.replace(path);
+            EurekaClinicalClient client = route.getClient();
             if (replacementPath != null) {
-                return new ReplacementPathAndClient(replacementPath, route.getClient());
+                return new ReplacementPathAndClient(replacementPath, client, this.patterns.get(client));
             }
         }
         return null;
