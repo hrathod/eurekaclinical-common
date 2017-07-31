@@ -40,7 +40,7 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 import org.eurekaclinical.common.filter.AutoAuthorizationFilter;
 import org.eurekaclinical.common.filter.HasAuthenticatedSessionFilter;
-import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
+import org.eurekaclinical.standardapis.props.CasJerseyEurekaClinicalProperties;
 
 /**
  * Extend to setup Eureka RESTful web services. This abstract class sets up
@@ -59,12 +59,12 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
     private static final String WEB_CONTENT_REGEX = "(/(image|js|css)/?.*)|(/.*\\.jsp)|(/WEB-INF/.*\\.jsp)|(/WEB-INF/.*\\.jspf)|(/.*\\.html)|(/favicon\\.ico)|(/robots\\.txt)";
     private final String packageNames;
     private final ServletModuleSupport servletModuleSupport;
-    private final CasEurekaClinicalProperties properties;
+    private final CasJerseyEurekaClinicalProperties properties;
 
     @Inject(optional = true)
     private AutoAuthorizationFilter autoAuthorizationFilter;
 
-    protected AbstractJerseyServletModule(CasEurekaClinicalProperties inProperties,
+    protected AbstractJerseyServletModule(CasJerseyEurekaClinicalProperties inProperties,
             String inPackageNames) {
         this.servletModuleSupport = new ServletModuleSupport(this
                 .getServletContext().getContextPath(), inProperties);

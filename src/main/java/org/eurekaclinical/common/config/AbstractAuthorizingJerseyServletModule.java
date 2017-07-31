@@ -21,7 +21,7 @@ package org.eurekaclinical.common.config;
  */
 
 import org.eurekaclinical.standardapis.filter.RolesFromDbFilter;
-import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
+import org.eurekaclinical.standardapis.props.CasJerseyEurekaClinicalProperties;
 
 /**
  * Extend to setup Eureka RESTful web services. This abstract class sets up
@@ -32,7 +32,7 @@ import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
  */
 public abstract class AbstractAuthorizingJerseyServletModule extends AbstractJerseyServletModule {
 
-    protected AbstractAuthorizingJerseyServletModule(CasEurekaClinicalProperties inProperties,
+    protected AbstractAuthorizingJerseyServletModule(CasJerseyEurekaClinicalProperties inProperties,
             String inPackageNames) {
         super(inProperties, inPackageNames);
     }
