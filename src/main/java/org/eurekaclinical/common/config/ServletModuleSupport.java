@@ -49,8 +49,8 @@ final class ServletModuleSupport {
         Map<String, String> params = new HashMap<>();
         params.put("casServerLoginUrl", this.getCasLoginUrl());
         params.put("serverName", this.properties.getProxyCallbackServer());
-        params.put("renew", "false");
-        params.put("gateway", "false");
+        params.put("renew", Boolean.toString(this.properties.getCasLoginRenew()));
+        params.put("gateway", Boolean.toString(this.properties.getCasLoginGateway()));
         if (LOGGER.isDebugEnabled()) {
             this.printParams(params);
         }

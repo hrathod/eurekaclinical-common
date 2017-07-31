@@ -39,6 +39,7 @@ import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 import org.eurekaclinical.common.filter.AutoAuthorizationFilter;
+import org.eurekaclinical.common.filter.HasAuthenticatedSessionFilter;
 import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
 /**
@@ -138,6 +139,8 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
     }
 
     protected void setupFilters() {
+        bind(HasAuthenticatedSessionFilter.class).in(Singleton.class);
+        filterRegex(CONTAINER_PROTECTED_PATH).through(HasAuthenticatedSessionFilter.class);
     }
 
     protected void setupAutoAuthorization() {
