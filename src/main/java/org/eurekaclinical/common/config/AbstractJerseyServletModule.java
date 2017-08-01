@@ -139,7 +139,7 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
     }
 
     protected void setupFilters() {
-        filterRegex(CONTAINER_PROTECTED_PATH).through(HasAuthenticatedSessionFilter.class);
+        filter(CONTAINER_PROTECTED_PATH).through(HasAuthenticatedSessionFilter.class);
     }
 
     protected void setupAutoAuthorization() {

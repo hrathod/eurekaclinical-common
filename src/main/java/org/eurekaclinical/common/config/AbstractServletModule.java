@@ -27,6 +27,8 @@ import org.jasig.cas.client.util.HttpServletRequestWrapperFilter;
 
 import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
+import java.util.HashMap;
+import org.eurekaclinical.common.filter.HasAuthenticatedSessionFilter;
 import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
 import org.jasig.cas.client.session.SingleSignOutFilter;
@@ -68,7 +70,10 @@ public abstract class AbstractServletModule extends ServletModule {
         bind(AuthenticationFilter.class).in(Singleton.class);
         Map<String, String> params
                 = this.servletModuleSupport.getCasAuthenticationFilterInitParams();
-        filter(PROTECTED_PATH).through(AuthenticationFilter.class, params);
+        Map<String, String> sessionParams = new HashMap<>(params);
+        sessionParams.put("gateway", "true");
+        filter("/protected/get-session").through(AuthenticationFilter.class, sessionParams);
+        filterRegex("^/protected/(?!get-session).*").through(AuthenticationFilter.class, params);
     }
 
     private void setupCasServletRequestWrapperFilter() {
@@ -96,10 +101,11 @@ public abstract class AbstractServletModule extends ServletModule {
     protected abstract void setupServlets();
 
     /**
-     * Override to setup additional filters. The default implementation does
-     * nothing.
+     * Override to setup additional filters. The default implementation sets
+     * up default filters and must be called.
      */
     protected void setupFilters() {
+        filter(PROTECTED_PATH).through(HasAuthenticatedSessionFilter.class);
     }
 
     @Override

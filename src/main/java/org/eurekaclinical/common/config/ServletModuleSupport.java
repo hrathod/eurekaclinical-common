@@ -45,6 +45,16 @@ final class ServletModuleSupport {
         this.contextPath = contextPath;
     }
 
+    /**
+     * Gets a parameter map with default values for the following
+     * CAS authentication filter parameters:
+     * * casServerLoginUrl
+     * * serverName
+     * * renew
+     * * gateway
+     * 
+     * @return a newly created parameter map, guaranteed not null.
+     */
     Map<String, String> getCasAuthenticationFilterInitParams() {
         Map<String, String> params = new HashMap<>();
         params.put("casServerLoginUrl", this.getCasLoginUrl());
