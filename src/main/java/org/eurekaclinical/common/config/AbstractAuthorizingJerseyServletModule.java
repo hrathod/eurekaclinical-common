@@ -39,6 +39,7 @@ public abstract class AbstractAuthorizingJerseyServletModule extends AbstractJer
 
     @Override
     protected void setupFilters() {
+        super.setupFilters();
         filter("/*").through(RolesFromDbFilter.class);
     }
     

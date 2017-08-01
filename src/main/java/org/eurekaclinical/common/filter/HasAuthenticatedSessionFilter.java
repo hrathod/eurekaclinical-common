@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Singleton;
 
-
 /**
  *
  * @author miaoai
@@ -39,43 +38,42 @@ import com.google.inject.Singleton;
 @Singleton
 public class HasAuthenticatedSessionFilter implements Filter {
 
-	private static final Logger LOGGER
-			= LoggerFactory.getLogger(HasAuthenticatedSessionFilter.class);
+    private static final Logger LOGGER
+            = LoggerFactory.getLogger(HasAuthenticatedSessionFilter.class);
 
+    public HasAuthenticatedSessionFilter() {
+    }
 
-	public HasAuthenticatedSessionFilter() {
-	}
+    @Override
+    public void init(FilterConfig inFilterConfig) throws ServletException {
+    }
 
-	@Override
-	public void init(FilterConfig inFilterConfig) throws ServletException {
-	}
+    @Override
+    public void doFilter(ServletRequest inRequest, ServletResponse inResponse, FilterChain inFilterChain) throws IOException, ServletException {
 
-	@Override
-	public void doFilter(ServletRequest inRequest, ServletResponse inResponse, FilterChain inFilterChain) throws IOException, ServletException {
+        HttpServletRequest servletRequest = (HttpServletRequest) inRequest;
+        HttpServletResponse servletResponse = (HttpServletResponse) inResponse;
 
-		HttpServletRequest servletRequest = (HttpServletRequest) inRequest;
-		HttpServletResponse servletResponse = (HttpServletResponse) inResponse;
+        String remoteUser = servletRequest.getRemoteUser();
 
-		String remoteUser = servletRequest.getRemoteUser();
+        if (remoteUser != null) {
+            HttpSession session = servletRequest.getSession(false);
+            if (session != null) {
+                inFilterChain.doFilter(inRequest, inResponse);
+            } else {
+                goHome(servletRequest, servletResponse);
+            }
+        } else {
+            servletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
+        }
+    }
 
-		if (remoteUser != null) {
-			HttpSession session = servletRequest.getSession(false);
-			if (session != null) {
-				inFilterChain.doFilter(inRequest, inResponse);
-			} else {
-				goHome(servletRequest, servletResponse);
-			}
-		} else {
-			servletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
-		}
-	}
+    private void goHome(HttpServletRequest inRequest, HttpServletResponse inResponse) throws IOException {
+        inResponse.sendRedirect(inRequest.getContextPath() + "/logout?goHome=true");
+    }
 
-	private void goHome(HttpServletRequest inRequest, HttpServletResponse inResponse) throws IOException {
-		inResponse.sendRedirect(inRequest.getContextPath() + "/logout?goHome=true");
-	}
-
-	@Override
-	public void destroy() {
-	}
+    @Override
+    public void destroy() {
+    }
 
 }

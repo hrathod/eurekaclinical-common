@@ -139,7 +139,6 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
     }
 
     protected void setupFilters() {
-        bind(HasAuthenticatedSessionFilter.class).in(Singleton.class);
         filterRegex(CONTAINER_PROTECTED_PATH).through(HasAuthenticatedSessionFilter.class);
     }
 

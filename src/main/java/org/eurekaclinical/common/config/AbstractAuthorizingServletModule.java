@@ -41,6 +41,7 @@ public abstract class AbstractAuthorizingServletModule extends AbstractServletMo
 
     @Override
     protected void setupFilters() {
+        super.setupFilters();
         filter("/*").through(RolesFromServiceFilter.class);
     }
     
