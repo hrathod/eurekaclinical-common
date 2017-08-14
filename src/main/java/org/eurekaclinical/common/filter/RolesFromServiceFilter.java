@@ -26,7 +26,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpSession;
 import org.eurekaclinical.common.comm.Role;
 import org.eurekaclinical.common.comm.User;
 import org.eurekaclinical.common.comm.clients.AuthorizingEurekaClinicalProxyClient;
@@ -40,7 +39,7 @@ import org.eurekaclinical.common.comm.clients.ClientException;
  * @author Andrew Post
  */
 @Singleton
-public abstract class RolesFromServiceFilter extends AbstractRolesFilter {
+public class RolesFromServiceFilter extends AbstractRolesFilter {
 
     private final AuthorizingEurekaClinicalProxyClient client;
 
