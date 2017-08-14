@@ -715,7 +715,9 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      *
      * @param path the path to the resource. Cannot be <code>null</code>.
      * @param inputStream the contents of the POST body. Cannot be <code>null</code>.
-     * @param headers any request headers to add.
+     * @param parameterMap query parameters. May be <code>null</code>.
+     * @param headers any request headers to add. May be <code>null</code>.
+     * 
      * @return ClientResponse the proxied server's response information.
      *
      * @throws ClientException if the proxied server responds with an "error"
@@ -733,7 +735,9 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      *
      * @param path the path to the resource. Cannot be <code>null</code>.
      * @param inputStream the contents of the update. Cannot be <code>null</code>.
+     * @param parameterMap query parameters. May be <code>null</code>.
      * @param headers any request headers to add.
+     * 
      * @return ClientResponse the proxied server's response information.
      *
      * @throws ClientException if the proxied server responds with an "error"
@@ -750,7 +754,9 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * Gets a resource from a proxied server.
      *
      * @param path the path to the resource. Cannot be <code>null</code>.
+     * @param parameterMap query parameters. May be <code>null</code>.
      * @param headers any request headers to add.
+     * 
      * @return ClientResponse the proxied server's response information.
      *
      * @throws ClientException if the proxied server responds with an "error"
@@ -767,7 +773,9 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * Deletes a resource from a proxied server.
      *
      * @param path the path to the resource. Cannot be <code>null</code>.
+     * @param parameterMap query parameters. May be <code>null</code>.
      * @param headers any request headers to add.
+     * 
      * @return ClientResponse the proxied server's response information.
      *
      * @throws ClientException if the proxied server responds with an "error"
