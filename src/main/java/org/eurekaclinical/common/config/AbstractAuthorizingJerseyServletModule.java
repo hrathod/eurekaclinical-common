@@ -20,13 +20,16 @@ package org.eurekaclinical.common.config;
  * #L%
  */
 
-import org.eurekaclinical.standardapis.filter.RolesFromDbFilter;
+import org.eurekaclinical.common.filter.RolesFromServiceFilter;
 import org.eurekaclinical.standardapis.props.CasJerseyEurekaClinicalProperties;
 
 /**
  * Extend to setup Eureka RESTful web services. This abstract class sets up
  * Guice and Jersey and binds the authentication and authorization filters that
- * every Eureka web service should have.
+ * every Eureka web service should have. Role information will come from a REST
+ * API client that is bound to 
+ * {@link org.eurekaclinical.common.comm.clients.AuthorizingEurekaClinicalProxyClient} 
+ * in your Guice configuration.
  *
  * @author hrathod
  */
@@ -40,7 +43,7 @@ public abstract class AbstractAuthorizingJerseyServletModule extends AbstractJer
     @Override
     protected void setupFilters() {
         super.setupFilters();
-        filter("/*").through(RolesFromDbFilter.class);
+        filter("/*").through(RolesFromServiceFilter.class);
     }
     
 }

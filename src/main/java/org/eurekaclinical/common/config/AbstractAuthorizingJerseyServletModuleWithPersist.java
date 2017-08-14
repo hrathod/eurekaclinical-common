@@ -21,16 +21,20 @@ package org.eurekaclinical.common.config;
  */
 
 import com.google.inject.persist.PersistFilter;
+import org.eurekaclinical.standardapis.filter.RolesFromDbFilter;
 import org.eurekaclinical.standardapis.props.CasJerseyEurekaClinicalProperties;
 
 /**
  * Extend to setup Eureka RESTful web services. This abstract class sets up
  * Guice and Jersey and binds the authentication and authorization filters that
- * every Eureka web service should have.
+ * every Eureka web service should have. It also sets up JPA-based persistence.
+ * Role information will come from JPA through a data access object that is
+ * bound to {@link org.eurekaclinical.standardapis.dao.UserDao} in your Guice 
+ * configuration.
  *
  * @author hrathod
  */
-public abstract class AbstractAuthorizingJerseyServletModuleWithPersist extends AbstractAuthorizingJerseyServletModule {
+public abstract class AbstractAuthorizingJerseyServletModuleWithPersist extends AbstractJerseyServletModule {
 
     private static final String CONTAINER_PATH = "/api/*";
 
@@ -47,6 +51,12 @@ public abstract class AbstractAuthorizingJerseyServletModuleWithPersist extends 
          */
         filter(CONTAINER_PATH).through(PersistFilter.class);
         super.configureServlets();
+    }
+    
+    @Override
+    protected void setupFilters() {
+        super.setupFilters();
+        filter("/*").through(RolesFromDbFilter.class);
     }
 
 }
