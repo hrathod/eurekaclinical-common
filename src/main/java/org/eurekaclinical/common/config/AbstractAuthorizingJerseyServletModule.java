@@ -28,7 +28,7 @@ import org.eurekaclinical.standardapis.props.CasJerseyEurekaClinicalProperties;
  * Guice and Jersey and binds the authentication and authorization filters that
  * every Eureka web service should have. Role information will come from a REST
  * API client that is bound to 
- * {@link org.eurekaclinical.common.comm.clients.AuthorizingEurekaClinicalProxyClient} 
+ * {@link org.eurekaclinical.common.comm.clients.AuthorizingEurekaClinicalClient} 
  * in your Guice configuration.
  *
  * @author hrathod

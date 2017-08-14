@@ -28,8 +28,10 @@ import org.eurekaclinical.common.comm.Role;
 import org.eurekaclinical.common.comm.User;
 
 /**
- *
- * @author arpost
+ * Base class for creating REST API clients that implement Eureka! Clinical's
+ * standard users and roles APIs.
+ * 
+ * @author Andrew Post
  */
 public abstract class AuthorizingEurekaClinicalClient extends EurekaClinicalClient {
 
@@ -43,31 +45,31 @@ public abstract class AuthorizingEurekaClinicalClient extends EurekaClinicalClie
     }
     
     public List<? extends User> getUsers() throws ClientException {
-        final String path = "/proxy-resource/users";
+        final String path = "/api/protected/users";
         return doGet(path, UserList);
     }
 
     public User getMe() throws ClientException {
-        String path = "/proxy-resource/users/me";
+        String path = "/api/protected/users/me";
         return doGet(path, User.class);
     }
 
     public User getUserById(Long inUserId) throws ClientException {
-        final String path = "/proxy-resource/users/" + inUserId;
+        final String path = "/api/protected/users/" + inUserId;
         return doGet(path, User.class);
     }
 
     public List<Role> getRoles() throws ClientException {
-        final String path = "/proxy-resource/roles";
+        final String path = "/api/protected/roles";
         return doGet(path, RoleList);
     }
 
     public Role getRole(Long inRoleId) throws ClientException {
-        final String path = "/proxy-resource/roles/" + inRoleId;
+        final String path = "/api/protected/roles/" + inRoleId;
         return doGet(path, Role.class);
     }
 
     public Role getRoleByName(String name) throws ClientException {
-        return doGet("/proxy-resource/roles/byname/" + name, Role.class);
+        return doGet("/api/protected/roles/byname/" + name, Role.class);
     }
 }

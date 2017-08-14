@@ -19,6 +19,7 @@ package org.eurekaclinical.common.filter;
  * limitations under the License.
  * #L%
  */
+import com.google.inject.Injector;
 import org.eurekaclinical.standardapis.filter.AbstractRolesFilter;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -28,31 +29,33 @@ import javax.inject.Singleton;
 import javax.servlet.ServletException;
 import org.eurekaclinical.common.comm.Role;
 import org.eurekaclinical.common.comm.User;
-import org.eurekaclinical.common.comm.clients.AuthorizingEurekaClinicalProxyClient;
+import org.eurekaclinical.common.comm.clients.AuthorizingEurekaClinicalClient;
 import org.eurekaclinical.common.comm.clients.ClientException;
 
 /**
  * Filter that adds the user's roles from a REST API client to the request.
  * Users of this filter must bind
- * {@link AuthorizingEurekaClinicalProxyClient} in their Guice configuration.
+ * {@link AuthorizingEurekaClinicalClient} in their Guice configuration.
  *
  * @author Andrew Post
  */
 @Singleton
 public class RolesFromServiceFilter extends AbstractRolesFilter {
 
-    private final AuthorizingEurekaClinicalProxyClient client;
+    private final Injector injector;
 
     @Inject
-    public RolesFromServiceFilter(AuthorizingEurekaClinicalProxyClient inClient) {
-        this.client = inClient;
+    public RolesFromServiceFilter(Injector inInjector) {
+        this.injector = inInjector;
     }
 
     @Override
     protected String[] getRoles(Principal principal) throws ServletException {
+        AuthorizingEurekaClinicalClient client = 
+                this.injector.getInstance(AuthorizingEurekaClinicalClient.class);
         try {
-            List<Role> roles = this.client.getRoles();//eureka project roles table
-            User user = this.client.getMe();
+            List<Role> roles = client.getRoles();//eureka project roles table
+            User user = client.getMe();
             List<Long> roleIds = user.getRoles();
 
             List<String> roleNames = new ArrayList<>();
