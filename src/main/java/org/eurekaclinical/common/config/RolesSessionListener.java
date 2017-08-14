@@ -24,7 +24,6 @@ import com.google.inject.Injector;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
@@ -45,18 +44,11 @@ public class RolesSessionListener implements HttpSessionListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RolesSessionListener.class);
 
-    private final Injector injector;
-
-    @Inject
-    public RolesSessionListener(Injector inInjector) {
-        this.injector = inInjector;
-    }
-
     @Override
     public void sessionCreated(HttpSessionEvent hse) {
         HttpSession session = hse.getSession();
-        @SuppressWarnings("unchecked")
-        AuthorizingEurekaClinicalProxyClient client = this.injector.getInstance(AuthorizingEurekaClinicalProxyClient.class);
+        Injector injector = (Injector) session.getServletContext().getAttribute(Injector.class.getName());
+        AuthorizingEurekaClinicalProxyClient client = injector.getInstance(AuthorizingEurekaClinicalProxyClient.class);
         try {
             List<Role> roles = client.getRoles();//eureka project roles table
             User user = client.getMe();
