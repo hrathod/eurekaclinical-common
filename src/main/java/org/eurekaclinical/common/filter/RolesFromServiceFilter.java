@@ -19,14 +19,9 @@ package org.eurekaclinical.common.filter;
  * limitations under the License.
  * #L%
  */
-
-import com.google.inject.Injector;
 import java.io.IOException;
 import java.security.Principal;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -35,28 +30,18 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import org.eurekaclinical.common.comm.Role;
-import org.eurekaclinical.common.comm.User;
-import org.eurekaclinical.common.comm.clients.AuthorizingEurekaClinicalProxyClient;
-import org.eurekaclinical.common.comm.clients.ClientException;
 import org.eurekaclinical.standardapis.filter.RolesFilter;
 import org.eurekaclinical.standardapis.filter.RolesRequestWrapper;
 
 /**
- * To use this filter, bind an implementation of 
- * {@link AuthorizingEurekaClinicalProxyClient} in your Guice module.
- * 
+ * Filter that adds the roles set by the 
+ * {@link org.eurekaclinical.common.config.RolesSessionListener} to the 
+ * request.
+ *
  * @author Andrew Post
  */
 @Singleton
 public class RolesFromServiceFilter implements RolesFilter {
-
-    private final Injector injector;
-
-    @Inject
-    public RolesFromServiceFilter(Injector inInjector) {
-        this.injector = inInjector;
-    }
 
     @Override
     public void init(FilterConfig fc) throws ServletException {
@@ -67,32 +52,19 @@ public class RolesFromServiceFilter implements RolesFilter {
         HttpServletRequest servletRequest = (HttpServletRequest) inRequest;
         String username = servletRequest.getRemoteUser();
         if (username != null) {
-            AuthorizingEurekaClinicalProxyClient client = this.injector.getInstance(AuthorizingEurekaClinicalProxyClient.class);
-            try {
-                HttpSession session = servletRequest.getSession(false);
-                assert session != null : "session should not be null";
+            HttpSession session = servletRequest.getSession(false);
+            assert session != null : "session should not be null";
 
-                Principal principal = servletRequest.getUserPrincipal();
-                assert principal != null : "principal should not be null";
-                
-                List<Role> roles = client.getRoles();//eureka project roles table
-                User user = client.getMe();
-                List<Long> roleIds = user.getRoles();
+            Principal principal = servletRequest.getUserPrincipal();
+            assert principal != null : "principal should not be null";
 
-                Set<String> roleNames = new HashSet<>();
-                for (Role role : roles) {
-                    if (roleIds.contains(role.getId())) {
-                        roleNames.add(role.getName());
-                    }
-                }
+            @SuppressWarnings("unchecked")
+            Set<String> roleNames = (Set<String>) session.getAttribute("roles");
 
-                HttpServletRequest wrappedRequest = new RolesRequestWrapper(
-                        servletRequest, principal, roleNames);
+            HttpServletRequest wrappedRequest = new RolesRequestWrapper(
+                    servletRequest, principal, roleNames);
 
-                inChain.doFilter(wrappedRequest, inResponse);
-            } catch (ClientException ce) {
-                throw new ServletException(ce);
-            }
+            inChain.doFilter(wrappedRequest, inResponse);
         } else {
             inChain.doFilter(inRequest, inResponse);
         }
