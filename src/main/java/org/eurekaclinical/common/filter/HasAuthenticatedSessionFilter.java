@@ -26,28 +26,42 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.Singleton;
 
 /**
- *
+ * Filter that sets a request attribute, <code>userIsActivated</code>, if there 
+ * is an active session with a non-null remote user.
+ * 
  * @author miaoai
  */
 @Singleton
 public class HasAuthenticatedSessionFilter implements Filter {
 
-    private static final Logger LOGGER
-            = LoggerFactory.getLogger(HasAuthenticatedSessionFilter.class);
-
     public HasAuthenticatedSessionFilter() {
     }
 
+    /**
+     * Initializes the filter. Does nothing.
+     * 
+     * @param inFilterConfig the filter's configuration.
+     */
     @Override
-    public void init(FilterConfig inFilterConfig) throws ServletException {
+    public void init(FilterConfig inFilterConfig) {
     }
 
+    /**
+     * Sets the request attribute and passes the request and response onto the
+     * next filter. If there is no session or the remote user is not set,
+     * the response status is set to 400 (Bad Request).
+     * 
+     * @param inRequest the HTTP request.
+     * @param inResponse the HTTP response.
+     * @param inFilterChain the filter chain.
+     * @throws IOException if there is an error in subsequent filters or in
+     * the subsequent response.
+     * @throws ServletException if there is an error in subsequent filters.
+     */
     @Override
     public void doFilter(ServletRequest inRequest, ServletResponse inResponse, FilterChain inFilterChain) throws IOException, ServletException {
 
@@ -55,23 +69,18 @@ public class HasAuthenticatedSessionFilter implements Filter {
         HttpServletResponse servletResponse = (HttpServletResponse) inResponse;
 
         String remoteUser = servletRequest.getRemoteUser();
-
-        if (remoteUser != null) {
-            HttpSession session = servletRequest.getSession(false);
-            if (session != null) {
-                inFilterChain.doFilter(inRequest, inResponse);
-            } else {
-                goHome(servletRequest, servletResponse);
-            }
+        HttpSession session = servletRequest.getSession(false);
+        if (remoteUser != null && session != null) {
+            inRequest.setAttribute("userIsActivated", Boolean.TRUE);
+            inFilterChain.doFilter(inRequest, inResponse);
         } else {
             servletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 
-    private void goHome(HttpServletRequest inRequest, HttpServletResponse inResponse) throws IOException {
-        inResponse.sendRedirect(inRequest.getContextPath() + "/logout?goHome=true");
-    }
-
+    /**
+     * Destroys the filter. Does nothing.
+     */
     @Override
     public void destroy() {
     }
