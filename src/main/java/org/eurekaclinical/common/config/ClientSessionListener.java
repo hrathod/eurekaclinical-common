@@ -19,9 +19,9 @@ package org.eurekaclinical.common.config;
  * limitations under the License.
  * #L%
  */
-import com.google.inject.ConfigurationException;
-import com.google.inject.Injector;
+import java.text.MessageFormat;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import org.eurekaclinical.common.comm.clients.EurekaClinicalClient;
@@ -30,8 +30,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Manages the lifecycle of a Eureka! Clinical REST API client that is bound in
- * Guice with session scope. Use it as follows, where <code>Client</code> is 
- * the name of a subclass of {@link EurekaClinicalClient}:
+ * Guice with session scope. Use it as follows, where <code>Client</code> is the
+ * name of a subclass of {@link EurekaClinicalClient}:
  *
  * <pre>
  * servletContext.addSessionListener(new ClientSessionListener(Client.class));
@@ -44,10 +44,15 @@ public class ClientSessionListener implements HttpSessionListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientSessionListener.class);
 
     private final Class<? extends EurekaClinicalClient> clientCls;
-    private EurekaClinicalClient client;
+    /**
+     * Format of the session attributes that Guice creates when creating
+     * session-scoped class instances.
+     */
+    private final MessageFormat clientAttributeFormat
+            = new MessageFormat("Key[type={0}, annotation=[none]]");
 
     /**
-     * Creates a listener for instances of the specified session-scoped client 
+     * Creates a listener for instances of the specified session-scoped client
      * class.
      *
      * @param inClientCls the client class. Cannot be <code>null</code>.
@@ -60,31 +65,12 @@ public class ClientSessionListener implements HttpSessionListener {
     }
 
     /**
-     * Gets the client instance from Guice and stores it so that we can close 
-     * it when the session is destroyed.
-     * 
-     * We cannot just get the client instance in {@link #sessionDestroyed(javax.servlet.http.HttpSessionEvent) }
-     * because it may be called from outside of session scope. We have observed
-     * this happening when Tomcat sweeps its list of sessions to determine if
-     * any of them are expired and can be destroyed.
+     * Does nothing.
      *
      * @param hse the session event.
      */
     @Override
     public void sessionCreated(HttpSessionEvent hse) {
-        ServletContext servletContext = hse.getSession().getServletContext();
-        LOGGER.info("Creating client {} for service {}",
-                this.clientCls.getName(),
-                servletContext.getContextPath());
-        Injector injector = (Injector) servletContext.getAttribute(Injector.class.getName());
-        try {
-            this.client = injector.getInstance(this.clientCls);
-        } catch (ConfigurationException ce) {
-            LOGGER.error("Error creating client "
-                    + this.clientCls.getName()
-                    + " for service "
-                    + servletContext.getContextPath(), ce);
-        }
     }
 
     /**
@@ -94,15 +80,25 @@ public class ClientSessionListener implements HttpSessionListener {
      */
     @Override
     public void sessionDestroyed(HttpSessionEvent hse) {
-        ServletContext servletContext = hse.getSession().getServletContext();
-        if (this.client != null) {
-            LOGGER.info("Destroying client {} for service {}",
-                    this.clientCls.getName(),
-                    servletContext.getContextPath());
-
-            this.client.close();
-        } else {
-            LOGGER.warn("The client {} for service {} was not created at the start of the session, so there is nothing to close.",
+        HttpSession session = hse.getSession();
+        ServletContext servletContext = session.getServletContext();
+        /**
+         * We cannot use regular Guice injection to get the client instance
+         * because injection will fail with an OutOfScopeException if the
+         * session times out and Tomcat has to reap it. Guice stores the
+         * session-scoped class instances that it manages as session
+         * attributes, so instead we can get the client instance using its 
+         * attribute name.
+         *
+         * @param hse the session event.
+         */
+        String sessionAttr = this.clientAttributeFormat.format(
+                new Object[]{this.clientCls.getName()});
+        EurekaClinicalClient client
+                = (EurekaClinicalClient) session.getAttribute(sessionAttr);
+        if (client != null) {
+            client.close();
+            LOGGER.info("Client {} for service {} closed",
                     this.clientCls.getName(),
                     servletContext.getContextPath());
         }
