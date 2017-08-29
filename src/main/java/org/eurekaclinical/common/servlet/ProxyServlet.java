@@ -72,7 +72,7 @@ public class ProxyServlet extends HttpServlet {
         responseHeadersToExclude = new HashSet<>();
         for (String header : new String[]{
             "Connection", "Keep-Alive", "Proxy-Authenticate", "Proxy-Authorization",
-            "TE", "Trailers", "Transfer-Encoding", "Upgrade", HttpHeaders.COOKIE
+            "TE", "Trailers", "Transfer-Encoding", "Upgrade", HttpHeaders.SET_COOKIE
         }) {
             responseHeadersToExclude.add(header.toUpperCase());
         }
