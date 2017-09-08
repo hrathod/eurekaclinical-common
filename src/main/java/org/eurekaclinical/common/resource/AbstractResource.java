@@ -37,6 +37,8 @@ import org.eurekaclinical.standardapis.exception.HttpStatusException;
 /**
  *
  * @author Andrew Post
+ * @param <E> the entity class
+ * @param <C> the comm class
  */
 public abstract class AbstractResource<E extends Entity, C extends Object> {
     private final Dao<E, Long> dao;
@@ -58,7 +60,7 @@ public abstract class AbstractResource<E extends Entity, C extends Object> {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<C> getAll(@Context HttpServletRequest req) {
-        if (this.restricted && !req.isUserInRole("admin")) {
+        if (isRestricted() && !req.isUserInRole("admin")) {
             throw new HttpStatusException(Response.Status.FORBIDDEN);
         }
         List<C> results = new ArrayList<>();
@@ -75,7 +77,7 @@ public abstract class AbstractResource<E extends Entity, C extends Object> {
         E entity = this.dao.retrieve(inId);
         if (entity == null) {
             throw new HttpStatusException(Response.Status.NOT_FOUND);
-        } else if (isAuthorizedEntity(entity, req) && (!this.restricted || req.isUserInRole("admin"))) {
+        } else if (isAuthorizedEntity(entity, req) && (!isRestricted() || req.isUserInRole("admin"))) {
             return toComm(entity, req);
         } else {
             throw new HttpStatusException(Response.Status.NOT_FOUND);
