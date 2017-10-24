@@ -20,9 +20,7 @@ package org.eurekaclinical.common.comm.clients;
  * #L%
  */
 import com.google.inject.servlet.SessionScoped;
-import com.sun.jersey.api.client.ClientResponse;
 import java.io.InputStream;
-import java.util.Map;
 import javax.inject.Inject;
 import javax.ws.rs.core.MultivaluedMap;
 
