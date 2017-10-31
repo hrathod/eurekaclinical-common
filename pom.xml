@@ -14,7 +14,7 @@
     </parent>
     
     <properties>
-        <eurekaclinical-standard-apis-version>2.0-Alpha-10</eurekaclinical-standard-apis-version>
+        <eurekaclinical-standard-apis-version>2.0-Alpha-11</eurekaclinical-standard-apis-version>
     </properties>
     
     <url>https://github.com/eurekaclinical/eurekaclinical-common.git</url>
