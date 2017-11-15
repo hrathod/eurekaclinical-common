@@ -53,6 +53,55 @@ public abstract class AbstractServletModule extends ServletModule {
                 this.getServletContext().getContextPath(), inProperties);
     }
 
+    protected String getCasProxyCallbackPath() {
+        return this.servletModuleSupport.getCasProxyCallbackPath();
+    }
+
+    protected String getCasProxyCallbackUrl() {
+        return this.servletModuleSupport.getCasProxyCallbackUrl();
+    }
+
+    protected abstract Map<String, String> getCasValidationFilterInitParams();
+
+    protected abstract void setupServlets();
+
+    /**
+     * Override to setup additional filters. The default implementation sets
+     * up default filters and must be called.
+     */
+    protected void setupFilters() {
+        filter(getProtectedPath()).through(HasAuthenticatedSessionFilter.class);
+    }
+
+    @Override
+    protected final void configureServlets() {
+        super.configureServlets();
+        /*
+		 * CAS filters must go before other filters.
+         */
+        this.setupCasFilters();
+        this.setupFilters();
+        this.setupServlets();
+    }
+    
+    protected String getProtectedPath() {
+        return PROTECTED_PATH;
+    }
+
+    /*
+     * Sets up CAS filters. The filter order is specified in
+     * https://wiki.jasig.org/display/CASC/Configuring+Single+Sign+Out
+     * and
+     * https://wiki.jasig.org/display/CASC/CAS+Client+for+Java+3.1
+     */
+    private void setupCasFilters() {
+        this.setupCasSingleSignOutFilter();
+        this.setupCasAuthenticationFilter();
+        this.setupCasValidationFilter();
+        this.setupCasServletRequestWrapperFilter();
+        this.setupCasThreadLocalAssertionFilter();
+    }
+    
     private void setupCasSingleSignOutFilter() {
         bind(SingleSignOutFilter.class).in(Singleton.class);
         filter(UNPROTECTED_PATH).through(SingleSignOutFilter.class);
@@ -62,7 +111,7 @@ public abstract class AbstractServletModule extends ServletModule {
         bind(Cas20ProxyReceivingTicketValidationFilter.class).in(
                 Singleton.class);
         Map<String, String> params = getCasValidationFilterInitParams();
-        filter(this.servletModuleSupport.getCasProxyCallbackPath(), PROTECTED_PATH).through(
+        filter(this.servletModuleSupport.getCasProxyCallbackPath(), getProtectedPath()).through(
                 Cas20ProxyReceivingTicketValidationFilter.class, params);
     }
 
@@ -86,51 +135,6 @@ public abstract class AbstractServletModule extends ServletModule {
     private void setupCasThreadLocalAssertionFilter() {
         bind(AssertionThreadLocalFilter.class).in(Singleton.class);
         filter(UNPROTECTED_PATH).through(AssertionThreadLocalFilter.class);
-    }
-
-    protected String getCasProxyCallbackPath() {
-        return this.servletModuleSupport.getCasProxyCallbackPath();
-    }
-
-    protected String getCasProxyCallbackUrl() {
-        return this.servletModuleSupport.getCasProxyCallbackUrl();
-    }
-
-    protected abstract Map<String, String> getCasValidationFilterInitParams();
-
-    protected abstract void setupServlets();
-
-    /**
-     * Override to setup additional filters. The default implementation sets
-     * up default filters and must be called.
-     */
-    protected void setupFilters() {
-        filter(PROTECTED_PATH).through(HasAuthenticatedSessionFilter.class);
-    }
-
-    @Override
-    protected final void configureServlets() {
-        super.configureServlets();
-        /*
-		 * CAS filters must go before other filters.
-         */
-        this.setupCasFilters();
-        this.setupFilters();
-        this.setupServlets();
-    }
-
-    /*
-     * Sets up CAS filters. The filter order is specified in
-     * https://wiki.jasig.org/display/CASC/Configuring+Single+Sign+Out
-     * and
-     * https://wiki.jasig.org/display/CASC/CAS+Client+for+Java+3.1
-     */
-    private void setupCasFilters() {
-        this.setupCasSingleSignOutFilter();
-        this.setupCasAuthenticationFilter();
-        this.setupCasValidationFilter();
-        this.setupCasServletRequestWrapperFilter();
-        this.setupCasThreadLocalAssertionFilter();
     }
 
 }

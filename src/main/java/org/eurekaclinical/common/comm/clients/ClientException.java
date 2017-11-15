@@ -22,36 +22,39 @@ package org.eurekaclinical.common.comm.clients;
 import com.sun.jersey.api.client.ClientResponse;
 
 /**
- * Thrown by a REST client when the response of a REST call signifies an error 
+ * Thrown by a REST client when the response of a REST call signifies an error
  * condition.
- * 
+ *
  * @author hrathod
  */
 public final class ClientException extends Exception {
 
-	private final ClientResponse.Status responseStatus;
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * Creates the exception using the provided response status and message.
-	 *
-	 * @param responseStatus the <code>com.sun.jersey.api.client.ClientResponse.Status</code>.
-	 *                          Cannot be <code>null</code>.
-	 * @param message the exception's message.
-	 */
-	public ClientException(ClientResponse.Status responseStatus,
-			String message) {
-		super(message);
-		this.responseStatus = responseStatus;
-	}
+    private final ClientResponse.Status responseStatus;
 
-	/**
-	 * Returns the response status of the REST call that this exception 
-	 * concerns.
-	 * 
-	 * @return the <code>com.sun.jersey.api.client.ClientResponse.Status</code>.
-	 * Guaranteed not <code>null</code>.
-	 */
-	public ClientResponse.Status getResponseStatus() {
-		return responseStatus;
-	}
+    /**
+     * Creates the exception using the provided response status and message.
+     *
+     * @param responseStatus the
+     * <code>com.sun.jersey.api.client.ClientResponse.Status</code>. Cannot be
+     * <code>null</code>.
+     * @param message the exception's message.
+     */
+    public ClientException(ClientResponse.Status responseStatus,
+            String message) {
+        super(message);
+        this.responseStatus = responseStatus;
+    }
+
+    /**
+     * Returns the response status of the REST call that this exception
+     * concerns.
+     *
+     * @return the <code>com.sun.jersey.api.client.ClientResponse.Status</code>.
+     * Guaranteed not <code>null</code>.
+     */
+    public ClientResponse.Status getResponseStatus() {
+        return responseStatus;
+    }
 }

@@ -21,6 +21,8 @@ package org.eurekaclinical.common.config;
  */
 
 
+import java.util.HashMap;
+import java.util.Map;
 import org.eurekaclinical.common.filter.RolesFromServiceFilter;
 import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
@@ -42,7 +44,9 @@ public abstract class AbstractAuthorizingServletModule extends AbstractServletMo
     @Override
     protected void setupFilters() {
         super.setupFilters();
-        filter("/*").through(RolesFromServiceFilter.class);
+        Map<String, String> initParams = new HashMap<>();
+        initParams.put("protectedPath", getProtectedPath());
+        filter("/*").through(RolesFromServiceFilter.class, initParams);
     }
     
 
