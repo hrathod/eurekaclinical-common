@@ -26,7 +26,7 @@ import java.net.URI;
  *
  * @author Andrew Post
  */
-public interface WebResourceWrapperFactory {
+interface WebResourceWrapperFactory {
 
     WebResourceWrapper getInstance(ApacheHttpClient4 client, URI resourceUrl);
 
