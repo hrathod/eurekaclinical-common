@@ -35,6 +35,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -56,11 +59,13 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
     private final Class<? extends ContextResolver<? extends ObjectMapper>> contextResolverCls;
     private final ApacheHttpClient4 client;
     private final ClientConnectionManager clientConnManager;
+    private final Lock readLock;
+    private final Lock writeLock;
 
     /**
      * Constructor for passing in the object mapper instance that is used for
      * converting from/to JSON.
-     * 
+     *
      * @param cls the class of the object mapper.
      */
     protected EurekaClinicalClient(Class<? extends ContextResolver<? extends ObjectMapper>> cls) {
@@ -78,12 +83,20 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
         }
         this.client = ApacheHttpClient4.create(clientConfig);
         this.client.addFilter(new GZIPContentEncodingFilter(false));
+        ReadWriteLock lock = new ReentrantReadWriteLock();
+        this.readLock = lock.readLock();
+        this.writeLock = lock.writeLock();
     }
 
     @Override
     public void close() {
-        this.client.destroy();
-        this.clientConnManager.shutdown();
+        this.writeLock.lock();
+        try {
+            this.client.destroy();
+            this.clientConnManager.shutdown();
+        } finally {
+            this.writeLock.unlock();
+        }
     }
 
     protected abstract URI getResourceUrl();
@@ -96,8 +109,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * Deletes the resource specified by the path. Passes no HTTP headers.
      *
      * @param path the path to the resource. Cannot be <code>null</code>.
-     * @throws ClientException if a status code other than 204 (No Content),
-     * 202 (Accepted), and 200 (OK) is returned.
+     * @throws ClientException if a status code other than 204 (No Content), 202
+     * (Accepted), and 200 (OK) is returned.
      */
     protected void doDelete(String path) throws ClientException {
         doDelete(path, null);
@@ -108,16 +121,21 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      *
      * @param headers any HTTP headers. Can be <code>null</code>.
      * @param path the path to the resource. Cannot be <code>null</code>.
-     * 
-     * @throws ClientException if a status code other than 204 (No Content),
-     * 202 (Accepted), and 200 (OK) is returned.
+     *
+     * @throws ClientException if a status code other than 204 (No Content), 202
+     * (Accepted), and 200 (OK) is returned.
      */
     protected void doDelete(String path, MultivaluedMap<String, String> headers) throws ClientException {
-        ClientResponse response = this.getResourceWrapper()
-                .rewritten(path, HttpMethod.DELETE)
-                .delete(ClientResponse.class);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT, ClientResponse.Status.ACCEPTED);
-        response.close();
+        this.readLock.lock();
+        try {
+            ClientResponse response = this.getResourceWrapper()
+                    .rewritten(path, HttpMethod.DELETE)
+                    .delete(ClientResponse.class);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT, ClientResponse.Status.ACCEPTED);
+            response.close();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -125,16 +143,21 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * nature of the update is completely specified by the path alone.
      *
      * @param path the path to the resource. Cannot be <code>null</code>.
-     * 
+     *
      * @throws ClientException if a status code other than 204 (No Content) and
      * 200 (OK) is returned.
      */
     protected void doPut(String path) throws ClientException {
-        ClientResponse response = this.getResourceWrapper()
-                .rewritten(path, HttpMethod.PUT)
-                .put(ClientResponse.class);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
-        response.close();
+        this.readLock.lock();
+        try {
+            ClientResponse response = this.getResourceWrapper()
+                    .rewritten(path, HttpMethod.PUT)
+                    .put(ClientResponse.class);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
+            response.close();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -166,13 +189,18 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * 200 (OK) is returned.
      */
     protected void doPut(String path, Object o, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource rewritten = this.getResourceWrapper()
-                .rewritten(path, HttpMethod.PUT);
-        WebResource.Builder requestBuilder = rewritten.getRequestBuilder();
-        requestBuilder = ensureJsonHeaders(headers, requestBuilder, true, false);
-        ClientResponse response = requestBuilder.put(ClientResponse.class, o);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
-        response.close();
+        this.readLock.lock();
+        try {
+            WebResource rewritten = this.getResourceWrapper()
+                    .rewritten(path, HttpMethod.PUT);
+            WebResource.Builder requestBuilder = rewritten.getRequestBuilder();
+            requestBuilder = ensureJsonHeaders(headers, requestBuilder, true, false);
+            ClientResponse response = requestBuilder.put(ClientResponse.class, o);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
+            response.close();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -182,11 +210,10 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param <T> the type of the resource.
      * @param path the path to the resource. Cannot be <code>null</code>.
      * @param cls the type of the resource. Cannot be <code>null</code>.
-     * 
+     *
      * @return the resource.
-     * 
-     * @throws ClientException if a status code other than 200 (OK) is 
-     * returned.
+     *
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected <T> T doGet(String path, Class<T> cls) throws ClientException {
         return doGet(path, cls, null);
@@ -200,18 +227,22 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param cls the type of the resource. Cannot be <code>null</code>.
      * @param headers any headers. if no Accepts header is provided, an Accepts
      * header for JSON will be added.
-     * 
+     *
      * @return the resource.
-     * 
-     * @throws ClientException if a status code other than 200 (OK) is 
-     * returned.
+     *
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected <T> T doGet(String path, Class<T> cls, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET).getRequestBuilder();
-        requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
-        ClientResponse response = requestBuilder.get(ClientResponse.class);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
-        return response.getEntity(cls);
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET).getRequestBuilder();
+            requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
+            ClientResponse response = requestBuilder.get(ClientResponse.class);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
+            return response.getEntity(cls);
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -222,11 +253,10 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param path the path to the resource.
      * @param queryParams any query parameters. Cannot be <code>null</code>.
      * @param cls the type of the resource. Cannot be <code>null</code>.
-     * 
+     *
      * @return the resource.
-     * 
-     * @throws ClientException if a status code other than 200 (OK) is 
-     * returned.
+     *
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected <T> T doGet(String path, MultivaluedMap<String, String> queryParams, Class<T> cls) throws ClientException {
         return doGet(path, queryParams, cls, null);
@@ -242,18 +272,22 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param cls the type of the resource. Cannot be <code>null</code>.
      * @param headers any headers. If no Accepts header is provided, an Accepts
      * header for JSON will be added.
-     * 
+     *
      * @return the resource.
-     * 
-     * @throws ClientException if a status code other than 200 (OK) is 
-     * returned.
+     *
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected <T> T doGet(String path, MultivaluedMap<String, String> queryParams, Class<T> cls, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET, queryParams).getRequestBuilder();
-        requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
-        ClientResponse response = requestBuilder.get(ClientResponse.class);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
-        return response.getEntity(cls);
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET, queryParams).getRequestBuilder();
+            requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
+            ClientResponse response = requestBuilder.get(ClientResponse.class);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
+            return response.getEntity(cls);
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -262,11 +296,10 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * the server an Accepts header for JSON.
      *
      * @param path the path to call. Cannot be <code>null</code>.
-     * 
+     *
      * @return the client response.
-     * 
-     * @throws ClientException if a status code other than 200 (OK) is 
-     * returned.
+     *
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected ClientResponse doGetResponse(String path) throws ClientException {
         return doGetResponse(path, null);
@@ -280,18 +313,22 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param path the path to call. Cannot be <code>null</code>.
      * @param headers any headers. If no Accepts header is provided, this method
      * will add an Accepts header for JSON.
-     * 
+     *
      * @return the client response.
-     * 
-     * @throws ClientException if a status code other than 200 (OK) is 
-     * returned.
+     *
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected ClientResponse doGetResponse(String path, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET).getRequestBuilder();
-        requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
-        ClientResponse response = requestBuilder.get(ClientResponse.class);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
-        return response;
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET).getRequestBuilder();
+            requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
+            ClientResponse response = requestBuilder.get(ClientResponse.class);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
+            return response;
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -302,8 +339,7 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param genericType the type of the requested resource.
      * @return the requested resource.
      *
-     * @throws ClientException if a status code other than 200 (OK) is 
-     * returned.
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected <T> T doGet(String path, GenericType<T> genericType) throws ClientException {
         return doGet(path, genericType, null);
@@ -319,15 +355,19 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * Accepts header for JSON.
      * @return the requested resource.
      *
-     * @throws ClientException if a status code other than 200 (OK) is 
-     * returned.
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected <T> T doGet(String path, GenericType<T> genericType, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET).getRequestBuilder();
-        requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
-        ClientResponse response = requestBuilder.get(ClientResponse.class);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
-        return response.getEntity(genericType);
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET).getRequestBuilder();
+            requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
+            ClientResponse response = requestBuilder.get(ClientResponse.class);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
+            return response.getEntity(genericType);
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -338,8 +378,7 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param queryParams any query parameters to send.
      * @param genericType the type of the requested resource.
      * @return the requested resource.
-     * @throws ClientException if a status code other than 200 (OK) is 
-     * returned.
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected <T> T doGet(String path, MultivaluedMap<String, String> queryParams, GenericType<T> genericType) throws ClientException {
         return doGet(path, queryParams, genericType, null);
@@ -356,17 +395,21 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * Accepts header for JSON.
      * @return the requested resource.
      *
-     * @throws ClientException if a status code other than 200 (OK) is 
-     * returned.
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected <T> T doGet(String path, MultivaluedMap<String, String> queryParams, GenericType<T> genericType, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET, queryParams).getRequestBuilder();
-        requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
-        ClientResponse response = requestBuilder.get(ClientResponse.class);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
-        return response.getEntity(genericType);
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET, queryParams).getRequestBuilder();
+            requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
+            ClientResponse response = requestBuilder.get(ClientResponse.class);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
+            return response.getEntity(genericType);
+        } finally {
+            this.readLock.unlock();
+        }
     }
-    
+
     /**
      * Submits a form and gets back a JSON object. Adds appropriate Accepts and
      * Content Type headers.
@@ -377,8 +420,7 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param cls the type of object that is expected in the response.
      * @return the object in the response.
      *
-     * @throws ClientException if a status code other than 200 (OK) is
-     * returned.
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected <T> T doPost(String path, MultivaluedMap<String, String> formParams, Class<T> cls) throws ClientException {
         return doPost(path, formParams, cls, null);
@@ -396,15 +438,19 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * Type header is added for forms.
      * @return the object in the response.
      *
-     * @throws ClientException if a status code other than 200 (OK) is
-     * returned.
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected <T> T doPost(String path, MultivaluedMap<String, String> formParams, Class<T> cls, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
-        ensurePostFormHeaders(headers, requestBuilder, true, true);
-        ClientResponse response = requestBuilder.post(ClientResponse.class, formParams);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
-        return response.getEntity(cls);
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
+            ensurePostFormHeaders(headers, requestBuilder, true, true);
+            ClientResponse response = requestBuilder.post(ClientResponse.class, formParams);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
+            return response.getEntity(cls);
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -417,8 +463,7 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param genericType the type of object that is expected in the response.
      * @return the object in the response.
      *
-     * @throws ClientException if a status code other than 200 (OK) is
-     * returned.
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected <T> T doPost(String path, MultivaluedMap<String, String> formParams, GenericType<T> genericType) throws ClientException {
         return doPost(path, formParams, genericType, null);
@@ -436,29 +481,38 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * Type header is added for forms.
      * @return the object in the response.
      *
-     * @throws ClientException if a status code other than 200 (OK) is
-     * returned.
+     * @throws ClientException if a status code other than 200 (OK) is returned.
      */
     protected <T> T doPost(String path, MultivaluedMap<String, String> formParams, GenericType<T> genericType, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
-        ensurePostFormHeaders(headers, requestBuilder, true, true);
-        ClientResponse response = requestBuilder.post(ClientResponse.class, formParams);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
-        return response.getEntity(genericType);
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
+            ensurePostFormHeaders(headers, requestBuilder, true, true);
+            ClientResponse response = requestBuilder.post(ClientResponse.class, formParams);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
+            return response.getEntity(genericType);
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
      * Makes a POST call to the specified path.
      *
      * @param path the path to call.
-     * @throws ClientException if a status code other than 200 (OK) and 
-     * 204 (No Content) is returned.
+     * @throws ClientException if a status code other than 200 (OK) and 204 (No
+     * Content) is returned.
      */
     protected void doPost(String path) throws ClientException {
-        ClientResponse response = getResourceWrapper().rewritten(path, HttpMethod.POST)
-                .post(ClientResponse.class);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
-        response.close();
+        this.readLock.lock();
+        try {
+            ClientResponse response = getResourceWrapper().rewritten(path, HttpMethod.POST)
+                    .post(ClientResponse.class);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
+            response.close();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -467,8 +521,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param path the API to call.
      * @param formParams the form parameters to send.
      *
-     * @throws ClientException if a status code other than 200 (OK) and 
-     * 204 (No Content) is returned.
+     * @throws ClientException if a status code other than 200 (OK) and 204 (No
+     * Content) is returned.
      */
     protected void doPostForm(String path, MultivaluedMap<String, String> formParams) throws ClientException {
         doPostForm(path, formParams, null);
@@ -482,15 +536,20 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param headers any headers to send. If no Content Type header is
      * specified, it adds a Content Type for form data.
      *
-     * @throws ClientException if a status code other than 200 (OK) and 
-     * 204 (No Content) is returned.
+     * @throws ClientException if a status code other than 200 (OK) and 204 (No
+     * Content) is returned.
      */
     protected void doPostForm(String path, MultivaluedMap<String, String> formParams, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
-        ensurePostFormHeaders(headers, requestBuilder, true, false);
-        ClientResponse response = requestBuilder.post(ClientResponse.class);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
-        response.close();
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
+            ensurePostFormHeaders(headers, requestBuilder, true, false);
+            ClientResponse response = requestBuilder.post(ClientResponse.class);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
+            response.close();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -499,15 +558,20 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      *
      * @param path the API to call.
      * @param o the object to send.
-     * @throws ClientException if a status code other than 200 (OK) and 
-     * 204 (No Content) is returned.
+     * @throws ClientException if a status code other than 200 (OK) and 204 (No
+     * Content) is returned.
      */
     protected void doPost(String path, Object o) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
-        requestBuilder = ensureJsonHeaders(null, requestBuilder, true, false);
-        ClientResponse response = requestBuilder.post(ClientResponse.class, o);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
-        response.close();
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
+            requestBuilder = ensureJsonHeaders(null, requestBuilder, true, false);
+            ClientResponse response = requestBuilder.post(ClientResponse.class, o);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
+            response.close();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -517,15 +581,20 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param o the object to send.
      * @param headers any headers. If no Content Type header is provided, this
      * method adds a Content Type header for JSON.
-     * @throws ClientException if a status code other than 200 (OK) and 
-     * 204 (No Content) is returned.
+     * @throws ClientException if a status code other than 200 (OK) and 204 (No
+     * Content) is returned.
      */
     protected void doPost(String path, Object o, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
-        requestBuilder = ensureJsonHeaders(headers, requestBuilder, true, false);
-        ClientResponse response = requestBuilder.post(ClientResponse.class, o);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
-        response.close();
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
+            requestBuilder = ensureJsonHeaders(headers, requestBuilder, true, false);
+            ClientResponse response = requestBuilder.post(ClientResponse.class, o);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
+            response.close();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -535,16 +604,21 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param path the API to call.
      * @param formDataMultiPart the multi-part form content.
      *
-     * @throws ClientException if a status code other than 200 (OK) and 
-     * 204 (No Content) is returned.
+     * @throws ClientException if a status code other than 200 (OK) and 204 (No
+     * Content) is returned.
      */
     public void doPostMultipart(String path, FormDataMultiPart formDataMultiPart) throws ClientException {
-        ClientResponse response = getResourceWrapper()
-                .rewritten(path, HttpMethod.POST)
-                .type(Boundary.addBoundary(MediaType.MULTIPART_FORM_DATA_TYPE))
-                .post(ClientResponse.class, formDataMultiPart);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
-        response.close();
+        this.readLock.lock();
+        try {
+            ClientResponse response = getResourceWrapper()
+                    .rewritten(path, HttpMethod.POST)
+                    .type(Boundary.addBoundary(MediaType.MULTIPART_FORM_DATA_TYPE))
+                    .post(ClientResponse.class, formDataMultiPart);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
+            response.close();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -555,17 +629,22 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param headers any headers to add. If no Content Type header is provided,
      * this method adds a Content Type header for multi-part forms data.
      *
-     * @throws ClientException if a status code other than 200 (OK) and 
-     * 204 (No Content) is returned.
+     * @throws ClientException if a status code other than 200 (OK) and 204 (No
+     * Content) is returned.
      */
     public void doPostMultipart(String path, FormDataMultiPart formDataMultiPart, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper()
-                .rewritten(path, HttpMethod.POST).getRequestBuilder();
-        requestBuilder = ensurePostMultipartHeaders(headers, requestBuilder);
-        ClientResponse response = requestBuilder
-                .post(ClientResponse.class, formDataMultiPart);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
-        response.close();
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper()
+                    .rewritten(path, HttpMethod.POST).getRequestBuilder();
+            requestBuilder = ensurePostMultipartHeaders(headers, requestBuilder);
+            ClientResponse response = requestBuilder
+                    .post(ClientResponse.class, formDataMultiPart);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
+            response.close();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -575,8 +654,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param path the the API to call.
      * @param inputStream the multi-part form content.
      *
-     * @throws ClientException if a status code other than 200 (OK) and 
-     * 204 (No Content) is returned.
+     * @throws ClientException if a status code other than 200 (OK) and 204 (No
+     * Content) is returned.
      */
     protected void doPostMultipart(String path, InputStream inputStream) throws ClientException {
         doPostMultipart(path, inputStream, null);
@@ -592,15 +671,20 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * header is provided, this method adds a Content Type header for multi-part
      * forms data.
      *
-     * @throws ClientException if a status code other than 200 (OK) and 
-     * 204 (No Content) is returned.
+     * @throws ClientException if a status code other than 200 (OK) and 204 (No
+     * Content) is returned.
      */
     protected void doPostMultipart(String path, InputStream inputStream, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
-        requestBuilder = ensurePostMultipartHeaders(headers, requestBuilder);
-        ClientResponse response = requestBuilder.post(ClientResponse.class, inputStream);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
-        response.close();
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
+            requestBuilder = ensurePostMultipartHeaders(headers, requestBuilder);
+            ClientResponse response = requestBuilder.post(ClientResponse.class, inputStream);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
+            response.close();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -633,14 +717,19 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * (Created) is returned.
      */
     protected URI doPostCreate(String path, Object o, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
-        requestBuilder = ensurePostCreateJsonHeaders(headers, requestBuilder, true, false);
-        ClientResponse response = requestBuilder.post(ClientResponse.class, o);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.CREATED);
+        this.readLock.lock();
         try {
-            return response.getLocation();
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
+            requestBuilder = ensurePostCreateJsonHeaders(headers, requestBuilder, true, false);
+            ClientResponse response = requestBuilder.post(ClientResponse.class, o);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.CREATED);
+            try {
+                return response.getLocation();
+            } finally {
+                response.close();
+            }
         } finally {
-            response.close();
+            this.readLock.unlock();
         }
     }
 
@@ -674,14 +763,19 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * (Created) is returned.
      */
     protected URI doPostCreateMultipart(String path, InputStream inputStream, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
-        requestBuilder = ensurePostCreateMultipartHeaders(headers, requestBuilder);
-        ClientResponse response = requestBuilder.post(ClientResponse.class, inputStream);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.CREATED);
+        this.readLock.lock();
         try {
-            return response.getLocation();
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST).getRequestBuilder();
+            requestBuilder = ensurePostCreateMultipartHeaders(headers, requestBuilder);
+            ClientResponse response = requestBuilder.post(ClientResponse.class, inputStream);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.CREATED);
+            try {
+                return response.getLocation();
+            } finally {
+                response.close();
+            }
         } finally {
-            response.close();
+            this.readLock.unlock();
         }
     }
 
@@ -693,31 +787,37 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @param formDataMultiPart the form content.
      * @return the URI representing the created resource, for use in subsequent
      * operations on the resource.
-     * @throws ClientException if a status code other than 200 (OK) and 
-     * 201 (Created) is returned.
+     * @throws ClientException if a status code other than 200 (OK) and 201
+     * (Created) is returned.
      */
     protected URI doPostCreateMultipart(String path, FormDataMultiPart formDataMultiPart) throws ClientException {
-        ClientResponse response = getResourceWrapper()
-                .rewritten(path, HttpMethod.POST)
-                .type(Boundary.addBoundary(MediaType.MULTIPART_FORM_DATA_TYPE))
-                .accept(MediaType.TEXT_PLAIN)
-                .post(ClientResponse.class, formDataMultiPart);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.CREATED);
+        this.readLock.lock();
         try {
-            return response.getLocation();
+            ClientResponse response = getResourceWrapper()
+                    .rewritten(path, HttpMethod.POST)
+                    .type(Boundary.addBoundary(MediaType.MULTIPART_FORM_DATA_TYPE))
+                    .accept(MediaType.TEXT_PLAIN)
+                    .post(ClientResponse.class, formDataMultiPart);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.CREATED);
+            try {
+                return response.getLocation();
+            } finally {
+                response.close();
+            }
         } finally {
-            response.close();
+            this.readLock.unlock();
         }
     }
-    
+
     /**
      * Passes a new resource, form or other POST body to a proxied server.
      *
      * @param path the path to the resource. Cannot be <code>null</code>.
-     * @param inputStream the contents of the POST body. Cannot be <code>null</code>.
+     * @param inputStream the contents of the POST body. Cannot be
+     * <code>null</code>.
      * @param parameterMap query parameters. May be <code>null</code>.
      * @param headers any request headers to add. May be <code>null</code>.
-     * 
+     *
      * @return ClientResponse the proxied server's response information.
      *
      * @throws ClientException if the proxied server responds with an "error"
@@ -725,19 +825,25 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @see #getResourceUrl() for the URL of the proxied server.
      */
     protected ClientResponse doPostForProxy(String path, InputStream inputStream, MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST, parameterMap).getRequestBuilder();
-        copyHeaders(headers, requestBuilder);
-        return requestBuilder.post(ClientResponse.class, inputStream);
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST, parameterMap).getRequestBuilder();
+            copyHeaders(headers, requestBuilder);
+            return requestBuilder.post(ClientResponse.class, inputStream);
+        } finally {
+            this.readLock.unlock();
+        }
     }
-    
+
     /**
      * Passes a resource update to a proxied server.
      *
      * @param path the path to the resource. Cannot be <code>null</code>.
-     * @param inputStream the contents of the update. Cannot be <code>null</code>.
+     * @param inputStream the contents of the update. Cannot be
+     * <code>null</code>.
      * @param parameterMap query parameters. May be <code>null</code>.
      * @param headers any request headers to add.
-     * 
+     *
      * @return ClientResponse the proxied server's response information.
      *
      * @throws ClientException if the proxied server responds with an "error"
@@ -745,18 +851,23 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @see #getResourceUrl() for the URL of the proxied server.
      */
     protected ClientResponse doPutForProxy(String path, InputStream inputStream, MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.PUT, parameterMap).getRequestBuilder();
-        copyHeaders(headers, requestBuilder);
-        return requestBuilder.put(ClientResponse.class, inputStream);
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.PUT, parameterMap).getRequestBuilder();
+            copyHeaders(headers, requestBuilder);
+            return requestBuilder.put(ClientResponse.class, inputStream);
+        } finally {
+            this.readLock.unlock();
+        }
     }
-    
+
     /**
      * Gets a resource from a proxied server.
      *
      * @param path the path to the resource. Cannot be <code>null</code>.
      * @param parameterMap query parameters. May be <code>null</code>.
      * @param headers any request headers to add.
-     * 
+     *
      * @return ClientResponse the proxied server's response information.
      *
      * @throws ClientException if the proxied server responds with an "error"
@@ -764,18 +875,23 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @see #getResourceUrl() for the URL of the proxied server.
      */
     protected ClientResponse doGetForProxy(String path, MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET, parameterMap).getRequestBuilder();
-        copyHeaders(headers, requestBuilder);
-        return requestBuilder.get(ClientResponse.class);
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET, parameterMap).getRequestBuilder();
+            copyHeaders(headers, requestBuilder);
+            return requestBuilder.get(ClientResponse.class);
+        } finally {
+            this.readLock.unlock();
+        }
     }
-    
+
     /**
      * Deletes a resource from a proxied server.
      *
      * @param path the path to the resource. Cannot be <code>null</code>.
      * @param parameterMap query parameters. May be <code>null</code>.
      * @param headers any request headers to add.
-     * 
+     *
      * @return ClientResponse the proxied server's response information.
      *
      * @throws ClientException if the proxied server responds with an "error"
@@ -783,9 +899,14 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * @see #getResourceUrl() for the URL of the proxied server.
      */
     protected ClientResponse doDeleteForProxy(String path, MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.DELETE, parameterMap).getRequestBuilder();
-        copyHeaders(headers, requestBuilder);
-        return requestBuilder.delete(ClientResponse.class);
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.DELETE, parameterMap).getRequestBuilder();
+            copyHeaders(headers, requestBuilder);
+            return requestBuilder.delete(ClientResponse.class);
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -836,15 +957,20 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * header is added specifying JSON.
      * @return a string containing the requested resource.
      *
-     * @throws ClientException if the response had a status code other than
-     * 200 (OK).
+     * @throws ClientException if the response had a status code other than 200
+     * (OK).
      */
     String doGet(String path, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET).getRequestBuilder();
-        requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
-        ClientResponse response = requestBuilder.get(ClientResponse.class);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
-        return response.getEntity(String.class);
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET).getRequestBuilder();
+            requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
+            ClientResponse response = requestBuilder.get(ClientResponse.class);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
+            return response.getEntity(String.class);
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -856,15 +982,20 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
      * header is added specifying JSON.
      * @return a string containing the requested resource.
      *
-     * @throws ClientException if the response had a status code other than
-     * 200 (OK).
+     * @throws ClientException if the response had a status code other than 200
+     * (OK).
      */
     String doGet(String path, MultivaluedMap<String, String> queryParams, MultivaluedMap<String, String> headers) throws ClientException {
-        WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET, queryParams).getRequestBuilder();
-        requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
-        ClientResponse response = requestBuilder.get(ClientResponse.class);
-        errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
-        return response.getEntity(String.class);
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET, queryParams).getRequestBuilder();
+            requestBuilder = ensureJsonHeaders(headers, requestBuilder, false, true);
+            ClientResponse response = requestBuilder.get(ClientResponse.class);
+            errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
+            return response.getEntity(String.class);
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     /**
@@ -979,7 +1110,7 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
         }
         return requestBuilder;
     }
-    
+
     private static WebResource.Builder copyHeaders(MultivaluedMap<String, String> headers, WebResource.Builder requestBuilder) {
         if (headers != null) {
             for (Map.Entry<String, List<String>> entry : headers.entrySet()) {

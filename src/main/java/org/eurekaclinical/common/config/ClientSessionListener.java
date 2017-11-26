@@ -19,58 +19,40 @@ package org.eurekaclinical.common.config;
  * limitations under the License.
  * #L%
  */
-import java.text.MessageFormat;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionBindingEvent;
 import org.eurekaclinical.common.comm.clients.EurekaClinicalClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Manages the lifecycle of a Eureka! Clinical REST API client that is bound in
- * Guice with session scope. Use it as follows, where <code>Client</code> is the
- * name of a subclass of {@link EurekaClinicalClient}:
- *
- * <pre>
- * servletContext.addSessionListener(new ClientSessionListener(Client.class));
- * </pre>
+ * Manages the lifecycle of Eureka! Clinical REST API clients that are bound in
+ * Guice with session scope.
  *
  * @author Andrew Post
  */
-public class ClientSessionListener implements HttpSessionListener {
+public class ClientSessionListener implements HttpSessionAttributeListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientSessionListener.class);
-
-    private final Class<? extends EurekaClinicalClient> clientCls;
-    /**
-     * Format of the session attributes that Guice creates when creating
-     * session-scoped class instances.
-     */
-    private final MessageFormat clientAttributeFormat
-            = new MessageFormat("Key[type={0}, annotation=[none]]");
-
-    /**
-     * Creates a listener for instances of the specified session-scoped client
-     * class.
-     *
-     * @param inClientCls the client class. Cannot be <code>null</code>.
-     */
-    public ClientSessionListener(Class<? extends EurekaClinicalClient> inClientCls) {
-        if (inClientCls == null) {
-            throw new IllegalArgumentException("inClientCls cannot be null");
-        }
-        this.clientCls = inClientCls;
-    }
 
     /**
      * Does nothing.
      *
-     * @param hse the session event.
+     * @param hse the session binding event.
      */
     @Override
-    public void sessionCreated(HttpSessionEvent hse) {
+    public void attributeAdded(HttpSessionBindingEvent hse) {
+    }
+
+    /**
+     * Attempts to close the old client.
+     *
+     * @param hse the session binding event.
+     */
+    @Override
+    public void attributeReplaced(HttpSessionBindingEvent hse) {
+        Object possibleClient = hse.getValue();
+        closeClient(possibleClient);
     }
 
     /**
@@ -79,28 +61,21 @@ public class ClientSessionListener implements HttpSessionListener {
      * @param hse the session event.
      */
     @Override
-    public void sessionDestroyed(HttpSessionEvent hse) {
-        HttpSession session = hse.getSession();
-        ServletContext servletContext = session.getServletContext();
-        /**
-         * We cannot use regular Guice injection to get the client instance
-         * because injection will fail with an OutOfScopeException if the
-         * session times out and Tomcat has to reap it. Guice stores the
-         * session-scoped class instances that it manages as session
-         * attributes, so instead we can get the client instance using its 
-         * attribute name.
-         *
-         * @param hse the session event.
-         */
-        String sessionAttr = this.clientAttributeFormat.format(
-                new Object[]{this.clientCls.getName()});
-        EurekaClinicalClient client
-                = (EurekaClinicalClient) session.getAttribute(sessionAttr);
-        if (client != null) {
-            client.close();
-            LOGGER.info("Client {} for service {} closed",
-                    this.clientCls.getName(),
-                    servletContext.getContextPath());
+    public void attributeRemoved(HttpSessionBindingEvent hse) {
+        Object possibleClient = hse.getValue();
+        closeClient(possibleClient);
+    }
+
+    /**
+     * Actually closes the client, if it is a {@link EurekaClinicalClient}.
+     *
+     * @param possibleClient the client. If it is not a
+     * {@link EurekaClinicalClient}, it is ignored.
+     */
+    private void closeClient(Object possibleClient) {
+        if (possibleClient instanceof EurekaClinicalClient) {
+            LOGGER.info("closing EurekaClinicalClient {}", possibleClient.getClass().getName());
+            ((EurekaClinicalClient) possibleClient).close();
         }
     }
 }
