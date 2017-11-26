@@ -48,7 +48,7 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.codehaus.jackson.map.ObjectMapper;
 
 /**
- * Base class for creating REST API clients.
+ * Base class for creating REST API clients. This class is thread-safe.
  *
  * @author Andrew Post
  * @author hrathod
