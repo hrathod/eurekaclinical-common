@@ -57,7 +57,7 @@ class CasWebResourceWrapper extends AbstractWebResourceWrapper {
                     webResource.getURI().toString());
             if (proxyTicket == null) {
                 throw new ClientException(
-                        ClientResponse.Status.UNAUTHORIZED,
+                        ClientResponse.Status.BAD_REQUEST,
                         "Could not get proxy ticket for service call " + webResource.getURI().toString());
             }
             return webResource.queryParam("ticket", proxyTicket);
