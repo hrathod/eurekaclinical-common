@@ -19,6 +19,7 @@ package org.eurekaclinical.common.comm.clients;
  * limitations under the License.
  * #L%
  */
+import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
@@ -133,6 +134,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
                     .delete(ClientResponse.class);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT, ClientResponse.Status.ACCEPTED);
             response.close();
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -155,6 +158,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
                     .put(ClientResponse.class);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
             response.close();
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -198,6 +203,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.put(ClientResponse.class, o);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
             response.close();
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -240,6 +247,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.get(ClientResponse.class);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
             return response.getEntity(cls);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -285,6 +294,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.get(ClientResponse.class);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
             return response.getEntity(cls);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -326,6 +337,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.get(ClientResponse.class);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
             return response;
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -365,6 +378,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.get(ClientResponse.class);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
             return response.getEntity(genericType);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -405,6 +420,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.get(ClientResponse.class);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
             return response.getEntity(genericType);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -448,6 +465,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.post(ClientResponse.class, formParams);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
             return response.getEntity(cls);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -491,6 +510,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.post(ClientResponse.class, formParams);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
             return response.getEntity(genericType);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -510,6 +531,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
                     .post(ClientResponse.class);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
             response.close();
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -547,6 +570,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.post(ClientResponse.class);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
             response.close();
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -569,6 +594,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.post(ClientResponse.class, o);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
             response.close();
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -592,6 +619,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.post(ClientResponse.class, o);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
             response.close();
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -616,6 +645,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
                     .post(ClientResponse.class, formDataMultiPart);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
             response.close();
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -642,6 +673,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
                     .post(ClientResponse.class, formDataMultiPart);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
             response.close();
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -682,6 +715,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.post(ClientResponse.class, inputStream);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK, ClientResponse.Status.NO_CONTENT);
             response.close();
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -728,6 +763,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             } finally {
                 response.close();
             }
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -774,6 +811,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             } finally {
                 response.close();
             }
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -804,6 +843,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             } finally {
                 response.close();
             }
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -830,6 +871,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST, parameterMap).getRequestBuilder();
             copyHeaders(headers, requestBuilder);
             return requestBuilder.post(ClientResponse.class, inputStream);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -856,6 +899,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.PUT, parameterMap).getRequestBuilder();
             copyHeaders(headers, requestBuilder);
             return requestBuilder.put(ClientResponse.class, inputStream);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -880,6 +925,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.GET, parameterMap).getRequestBuilder();
             copyHeaders(headers, requestBuilder);
             return requestBuilder.get(ClientResponse.class);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -904,6 +951,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.DELETE, parameterMap).getRequestBuilder();
             copyHeaders(headers, requestBuilder);
             return requestBuilder.delete(ClientResponse.class);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -968,6 +1017,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.get(ClientResponse.class);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
             return response.getEntity(String.class);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
@@ -993,6 +1044,8 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             ClientResponse response = requestBuilder.get(ClientResponse.class);
             errorIfStatusNotEqualTo(response, ClientResponse.Status.OK);
             return response.getEntity(String.class);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
             this.readLock.unlock();
         }
