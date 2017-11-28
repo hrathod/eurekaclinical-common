@@ -19,7 +19,6 @@ package org.eurekaclinical.common.comm.clients;
  * limitations under the License.
  * #L%
  */
-import com.google.inject.servlet.SessionScoped;
 import java.io.InputStream;
 import javax.inject.Inject;
 import javax.ws.rs.core.MultivaluedMap;
@@ -28,7 +27,6 @@ import javax.ws.rs.core.MultivaluedMap;
  *
  * @author Andrew Post
  */
-@SessionScoped
 public class ProxyingClient {
 
     private final Router config;
