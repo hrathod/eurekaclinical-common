@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>eurekaclinical-common</artifactId>
     <name>Eureka! Clinical Common</name>
-    <version>2.0-Alpha-39</version>
+    <version>2.0-Alpha-40-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>A library of classes shared across the Eureka! Clinical platform.</description>
     
@@ -23,7 +23,7 @@
         <connection>scm:git:https://github.com/eurekaclinical/eurekaclinical-common.git</connection>
         <developerConnection>scm:git:https://github.com/eurekaclinical/eurekaclinical-common.git</developerConnection>
         <url>https://github.com/eurekaclinical/eurekaclinical-common.git</url>
-        <tag>eurekaclinical-common-2.0-Alpha-39</tag>
+        <tag>HEAD</tag>
     </scm>
 	
     <issueManagement>
