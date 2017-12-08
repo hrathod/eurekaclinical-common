@@ -59,14 +59,30 @@ public abstract class AbstractServletModule extends ServletModule {
                 this.getServletContext().getContextPath(), inProperties);
     }
 
+    /**
+     * Returns the path part of the proxy callback URL. The proxy callback
+     * URL is called by CAS to deliver the proxy ticket.
+     * 
+     * @return the path part of the proxy callback URL.
+     */
     protected String getCasProxyCallbackPath() {
         return this.servletModuleSupport.getCasProxyCallbackPath();
     }
 
+    /**
+     * Returns the proxy callback URL. It is called by CAS to deliver the proxy
+     * ticket
+     * 
+     * @return the proxy callback URL.
+     */
     protected String getCasProxyCallbackUrl() {
         return this.servletModuleSupport.getCasProxyCallbackUrl();
     }
 
+    /**
+     * Implement this method with calls to {@link #serve(java.lang.String, java.lang.String...) }
+     * to add servlets to the webapp.
+     */
     protected abstract void setupServlets();
 
     /**
@@ -88,30 +104,56 @@ public abstract class AbstractServletModule extends ServletModule {
         this.setupServlets();
     }
     
+    /**
+     * Gets the Tomcat protected path (that triggers CAS authentication).
+     * 
+     * @return the protected path string.
+     */
     protected String getProtectedPath() {
         return PROTECTED_PATH;
     }
     
+    /**
+     * Serves <code>/protected/login</code>.
+     */
     protected void serveLogin() {
         serve("/protected/login").with(LoginServlet.class);
     }
     
+    /**
+     * Serves <code>/protected/get-session</code>.
+     */
     protected void serveGetSession() {
         serve("/protected/get-session").with(PostMessageLoginServlet.class);
     }
     
+    /**
+     * Serves <code>/proxy-resource/*</code>.
+     */
     protected void serveProxyResource() {
         serve("/proxy-resource/*").with(ProxyServlet.class);
     }
     
+    /**
+     * Serves <code>/destroy-session</code>.
+     */
     protected void serveDestroySession() {
         serve("/destroy-session").with(DestroySessionServlet.class);  
     }
     
+    /**
+     * Serves <code>/protected/get-session-properties</code>.
+     */
     protected void serveGetSessionProperties() {
         serve("/protected/get-session-properties").with(SessionPropertiesServlet.class);;
     }
     
+    /**
+     * Constructs an init parameter map for the 
+     * {@link Cas20ProxyReceivingTicketValidationFilter} filter.
+     * 
+     * @return the init parameter map.
+     */
     protected Map<String, String> getCasValidationFilterInitParams() {
         Map<String, String> params = new HashMap<>();
         CasEurekaClinicalProperties properties = 
@@ -130,12 +172,16 @@ public abstract class AbstractServletModule extends ServletModule {
      * https://wiki.jasig.org/display/CASC/CAS+Client+for+Java+3.1
      */
     private void setupCasFilters() {
+        setupInvalidateSessionFilter();
+        setupCasSingleSignOutFilter();
+        setupCasAuthenticationFilter();
+        setupCasValidationFilter();
+        setupCasServletRequestWrapperFilter();
+        setupCasThreadLocalAssertionFilter();
+    }
+    
+    private void setupInvalidateSessionFilter() {
         filter(UNPROTECTED_PATH).through(InvalidateSessionFilter.class);
-        this.setupCasSingleSignOutFilter();
-        this.setupCasAuthenticationFilter();
-        this.setupCasValidationFilter();
-        this.setupCasServletRequestWrapperFilter();
-        this.setupCasThreadLocalAssertionFilter();
     }
     
     private void setupCasSingleSignOutFilter() {

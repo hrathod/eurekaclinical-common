@@ -54,8 +54,8 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(AbstractJerseyServletModule.class);
     private static final String UNPROTECTED_PATH = "/*";
-    private static final String CONTAINER_PATH = "/api/*";
-    private static final String CONTAINER_PROTECTED_PATH = "/api/protected/*";
+    private static final String UNPROTECTED_API_PATH = "/api/*";
+    private static final String PROTECTED_API_PATH = "/api/protected/*";
     private static final String TEMPLATES_PATH = "/WEB-INF/templates";
     private static final String WEB_CONTENT_REGEX = "(/(image|js|css)/?.*)|(/.*\\.jsp)|(/WEB-INF/.*\\.jsp)|(/WEB-INF/.*\\.jspf)|(/.*\\.html)|(/favicon\\.ico)|(/robots\\.txt)";
     private final String packageNames;
@@ -106,7 +106,7 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
         bind(Cas20ProxyReceivingTicketValidationFilter.class).in(
                 Singleton.class);
         Map<String, String> params = getCasValidationFilterInitParams();
-        filter(this.servletModuleSupport.getCasProxyCallbackPath(), CONTAINER_PROTECTED_PATH).through(
+        filter(this.servletModuleSupport.getCasProxyCallbackPath(), PROTECTED_API_PATH).through(
                 Cas20ProxyReceivingTicketValidationFilter.class, params);
     }
 
@@ -114,7 +114,7 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
         bind(AuthenticationFilter.class).in(Singleton.class);
         Map<String, String> params = this.servletModuleSupport
                 .getCasAuthenticationFilterInitParams();
-        filter(CONTAINER_PROTECTED_PATH).through(AuthenticationFilter.class,
+        filter(PROTECTED_API_PATH).through(AuthenticationFilter.class,
                 params);
     }
 
@@ -142,11 +142,11 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
         if (LOGGER.isDebugEnabled()) {
             this.printParams(params);
         }
-        serve(CONTAINER_PATH).with(GuiceContainer.class, params);
+        serve(UNPROTECTED_API_PATH).with(GuiceContainer.class, params);
     }
 
     protected void setupFilters() {
-        filter(CONTAINER_PROTECTED_PATH).through(HasAuthenticatedSessionFilter.class);
+        filter(PROTECTED_API_PATH).through(HasAuthenticatedSessionFilter.class);
     }
 
     protected void setupAutoAuthorization() {

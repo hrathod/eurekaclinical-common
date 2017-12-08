@@ -23,13 +23,14 @@ package org.eurekaclinical.common.config;
 import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
 /**
- * Servlet module that configures a webapp as an API gateway.
+ * Servlet module that configures a webapp as a combined webapp and API 
+ * gateway. It populates a user's role information for use within traditional
+ * servlets and JSP pages.
  * 
  * @author Andrew Post
  */
-public class ApiGatewayServletModule extends AbstractServletModule {
-
-    public ApiGatewayServletModule(CasEurekaClinicalProperties inProperties) {
+public class WebappServletModule extends AbstractAuthorizingServletModule {
+    public WebappServletModule(CasEurekaClinicalProperties inProperties) {
         super(inProperties);
     }
 
@@ -51,5 +52,4 @@ public class ApiGatewayServletModule extends AbstractServletModule {
         serveDestroySession();
         serveGetSessionProperties();
     }
-
 }

@@ -39,7 +39,7 @@ import org.jasig.cas.client.util.CommonUtils;
  */
 @Singleton
 public class InvalidateSessionFilter implements Filter {
-
+    
     @Override
     public void init(FilterConfig fc) throws ServletException {
     }
