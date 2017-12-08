@@ -20,8 +20,6 @@ package org.eurekaclinical.common.config;
  * #L%
  */
 
-import com.google.inject.persist.PersistFilter;
-import org.eurekaclinical.standardapis.filter.RolesFromDbFilter;
 import org.eurekaclinical.standardapis.props.CasJerseyEurekaClinicalProperties;
 
 /**
@@ -34,30 +32,12 @@ import org.eurekaclinical.standardapis.props.CasJerseyEurekaClinicalProperties;
  *
  * @author hrathod
  */
-public abstract class AbstractAuthorizingJerseyServletModuleWithPersist extends AbstractJerseyServletModule {
+public class ServiceServletModule extends AbstractAuthorizingJerseyServletModuleWithPersist {
 
-    private static final String CONTAINER_PATH = "/api/*";
-
-    protected AbstractAuthorizingJerseyServletModuleWithPersist(
+    public ServiceServletModule(
             CasJerseyEurekaClinicalProperties inProperties,
-            String inPackageNames, boolean inDoesProxy) {
-        super(inProperties, inPackageNames, inDoesProxy);
-    }
-
-    @Override
-    protected void configureServlets() {
-        /**
-         * Guice docs say that PersistFilter must be registered before any other
-         * filter.
-         */
-        filter(CONTAINER_PATH).through(PersistFilter.class);
-        super.configureServlets();
-    }
-    
-    @Override
-    protected void setupFilters() {
-        super.setupFilters();
-        filter("/*").through(RolesFromDbFilter.class);
+            String inPackageNames) {
+        super(inProperties, inPackageNames, false);
     }
 
 }

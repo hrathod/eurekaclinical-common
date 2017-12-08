@@ -53,6 +53,7 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(AbstractJerseyServletModule.class);
+    private static final String UNPROTECTED_PATH = "/*";
     private static final String CONTAINER_PATH = "/api/*";
     private static final String CONTAINER_PROTECTED_PATH = "/api/protected/*";
     private static final String TEMPLATES_PATH = "/WEB-INF/templates";
@@ -63,13 +64,15 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
 
     @Inject(optional = true)
     private AutoAuthorizationFilter autoAuthorizationFilter;
+    private final boolean doesProxy;
 
     protected AbstractJerseyServletModule(CasJerseyEurekaClinicalProperties inProperties,
-            String inPackageNames) {
+            String inPackageNames, boolean inDoesProxy) {
         this.servletModuleSupport = new ServletModuleSupport(this
                 .getServletContext().getContextPath(), inProperties);
         this.packageNames = inPackageNames;
         this.properties = inProperties;
+        this.doesProxy = inDoesProxy;
     }
 
     protected void printParams(Map<String, String> inParams) {
@@ -92,6 +95,10 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
         params.put("serverName", this.properties.getProxyCallbackServer());
         params.put("redirectAfterValidation", "false");
         params.put("acceptAnyProxy", "true");
+        if (this.doesProxy) {
+            params.put("proxyCallbackUrl", getCasProxyCallbackUrl());
+            params.put("proxyReceptorUrl", getCasProxyCallbackPath());
+        }
         return params;
     }
 
@@ -115,12 +122,12 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
         bind(HttpServletRequestWrapperFilter.class).in(Singleton.class);
         Map<String, String> params = this.servletModuleSupport
                 .getServletRequestWrapperFilterInitParams();
-        filter("/*").through(HttpServletRequestWrapperFilter.class, params);
+        filter(UNPROTECTED_PATH).through(HttpServletRequestWrapperFilter.class, params);
     }
 
     private void setupCasThreadLocalAssertionFilter() {
         bind(AssertionThreadLocalFilter.class).in(Singleton.class);
-        filter("/*").through(AssertionThreadLocalFilter.class);
+        filter(UNPROTECTED_PATH).through(AssertionThreadLocalFilter.class);
     }
 
     private void setupContainer() {
@@ -144,7 +151,7 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
 
     protected void setupAutoAuthorization() {
         if (this.autoAuthorizationFilter != null) {
-            filter("/*").through(AutoAuthorizationFilter.class);
+            filter(UNPROTECTED_PATH).through(AutoAuthorizationFilter.class);
         }
     }
 
@@ -162,7 +169,7 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
 
     /**
      * Sets up CAS filters. The filter order is specified in
-     * https://wiki.jasig.org/display/CASC/CAS+Client+for+Java+3.1
+     * https://wiki.jasig.org/display/casc/configuring+the+jasig+cas+client+for+java+in+the+web.xml
      */
     private void setupCasFilters() {
         this.setupCasValidationFilter();

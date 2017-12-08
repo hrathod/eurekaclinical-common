@@ -1,10 +1,10 @@
-package org.eurekaclinical.common.servlet;
+package org.eurekaclinical.common.config;
 
 /*-
  * #%L
  * Eureka! Clinical Common
  * %%
- * Copyright (C) 2016 Emory University
+ * Copyright (C) 2016 - 2017 Emory University
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,32 +20,25 @@ package org.eurekaclinical.common.servlet;
  * #L%
  */
 
-import java.io.IOException;
-import javax.inject.Inject;
-
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import javax.inject.Singleton;
-
+import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
 /**
- * Servlet that does nothing but return 200 in response to a GET.
- * 
+ *
  * @author Andrew Post
  */
-@Singleton
-public class LoginServlet extends HttpServlet {
+public class ApiGatewayServletModule extends AbstractAuthorizingServletModule {
 
-    private static final long serialVersionUID = 1L;
-
-    @Inject
-    public LoginServlet() {
+    public ApiGatewayServletModule(CasEurekaClinicalProperties inProperties) {
+        super(inProperties);
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.sendRedirect("https://localhost:8000");
+    protected void setupServlets() {
+        serveProxyResource();
+        serveLogin();
+        serveGetSession();
+        serveDestroySession();
+        serveGetSessionProperties();
     }
+
 }

@@ -76,6 +76,19 @@ final class ServletModuleSupport {
         return params;
     }
     
+    CasEurekaClinicalProperties getApplicationProperties() {
+        return this.properties;
+    }
+    
+    protected String getCasProxyCallbackUrl() {
+        return this.properties.getProxyCallbackServer() + this.contextPath
+                + CAS_PROXY_CALLBACK_PATH;
+    }
+
+    protected String getCasProxyCallbackPath() {
+        return CAS_PROXY_CALLBACK_PATH;
+    }
+    
     private void printParams(Map<String, String> inParams) {
         for (Map.Entry<String, String> entry : inParams.entrySet()) {
             LOGGER.debug(entry.getKey() + " -> " + entry.getValue());
@@ -84,15 +97,6 @@ final class ServletModuleSupport {
     
     private String getCasLoginUrl() {
         return this.properties.getCasLoginUrl();
-    }
-
-    protected String getCasProxyCallbackUrl() {
-        return this.properties.getProxyCallbackServer() + this.contextPath
-                + CAS_PROXY_CALLBACK_PATH;
-    }
-
-    protected String getCasProxyCallbackPath() {
-        return CAS_PROXY_CALLBACK_PATH;
     }
     
 }

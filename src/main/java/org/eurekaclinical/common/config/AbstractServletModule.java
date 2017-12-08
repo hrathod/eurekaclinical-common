@@ -29,6 +29,12 @@ import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
 import java.util.HashMap;
 import org.eurekaclinical.common.filter.HasAuthenticatedSessionFilter;
+import org.eurekaclinical.common.filter.InvalidateSessionFilter;
+import org.eurekaclinical.common.servlet.DestroySessionServlet;
+import org.eurekaclinical.common.servlet.LoginServlet;
+import org.eurekaclinical.common.servlet.PostMessageLoginServlet;
+import org.eurekaclinical.common.servlet.ProxyServlet;
+import org.eurekaclinical.common.servlet.SessionPropertiesServlet;
 import org.eurekaclinical.standardapis.props.CasEurekaClinicalProperties;
 
 import org.jasig.cas.client.session.SingleSignOutFilter;
@@ -61,8 +67,6 @@ public abstract class AbstractServletModule extends ServletModule {
         return this.servletModuleSupport.getCasProxyCallbackUrl();
     }
 
-    protected abstract Map<String, String> getCasValidationFilterInitParams();
-
     protected abstract void setupServlets();
 
     /**
@@ -77,7 +81,7 @@ public abstract class AbstractServletModule extends ServletModule {
     protected final void configureServlets() {
         super.configureServlets();
         /*
-		 * CAS filters must go before other filters.
+         * CAS filters must go before other filters.
          */
         this.setupCasFilters();
         this.setupFilters();
@@ -87,6 +91,37 @@ public abstract class AbstractServletModule extends ServletModule {
     protected String getProtectedPath() {
         return PROTECTED_PATH;
     }
+    
+    protected void serveLogin() {
+        serve("/protected/login").with(LoginServlet.class);
+    }
+    
+    protected void serveGetSession() {
+        serve("/protected/get-session").with(PostMessageLoginServlet.class);
+    }
+    
+    protected void serveProxyResource() {
+        serve("/proxy-resource/*").with(ProxyServlet.class);
+    }
+    
+    protected void serveDestroySession() {
+        serve("/destroy-session").with(DestroySessionServlet.class);  
+    }
+    
+    protected void serveGetSessionProperties() {
+        serve("/protected/get-session-properties").with(SessionPropertiesServlet.class);;
+    }
+    
+    protected Map<String, String> getCasValidationFilterInitParams() {
+        Map<String, String> params = new HashMap<>();
+        CasEurekaClinicalProperties properties = 
+                this.servletModuleSupport.getApplicationProperties();
+        params.put("casServerUrlPrefix", properties.getCasUrl());
+        params.put("serverName", properties.getProxyCallbackServer());
+        params.put("proxyCallbackUrl", getCasProxyCallbackUrl());
+        params.put("proxyReceptorUrl", getCasProxyCallbackPath());
+        return params;
+    }
 
     /*
      * Sets up CAS filters. The filter order is specified in
@@ -95,6 +130,7 @@ public abstract class AbstractServletModule extends ServletModule {
      * https://wiki.jasig.org/display/CASC/CAS+Client+for+Java+3.1
      */
     private void setupCasFilters() {
+        filter(UNPROTECTED_PATH).through(InvalidateSessionFilter.class);
         this.setupCasSingleSignOutFilter();
         this.setupCasAuthenticationFilter();
         this.setupCasValidationFilter();
@@ -121,6 +157,9 @@ public abstract class AbstractServletModule extends ServletModule {
                 = this.servletModuleSupport.getCasAuthenticationFilterInitParams();
         Map<String, String> sessionParams = new HashMap<>(params);
         sessionParams.put("gateway", "true");
+        Map<String, String> loginParams = new HashMap<>(params);
+        loginParams.put("gateway", "false");
+        filter("/protected/login").through(AuthenticationFilter.class, loginParams);
         filter("/protected/get-session").through(AuthenticationFilter.class, sessionParams);
         filterRegex("^/protected/(?!get-session).*").through(AuthenticationFilter.class, params);
     }
@@ -136,5 +175,5 @@ public abstract class AbstractServletModule extends ServletModule {
         bind(AssertionThreadLocalFilter.class).in(Singleton.class);
         filter(UNPROTECTED_PATH).through(AssertionThreadLocalFilter.class);
     }
-
+    
 }

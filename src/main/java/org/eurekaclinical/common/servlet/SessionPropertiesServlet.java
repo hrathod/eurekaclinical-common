@@ -2,9 +2,9 @@ package org.eurekaclinical.common.servlet;
 
 /*-
  * #%L
- * Eureka! Clinical Common
+ * Eureka WebApp
  * %%
- * Copyright (C) 2016 Emory University
+ * Copyright (C) 2012 - 2017 Emory University
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,31 +21,26 @@ package org.eurekaclinical.common.servlet;
  */
 
 import java.io.IOException;
-import javax.inject.Inject;
-
+import javax.inject.Singleton;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import javax.inject.Singleton;
-
-
 /**
- * Servlet that does nothing but return 200 in response to a GET.
- * 
+ *
  * @author Andrew Post
  */
 @Singleton
-public class LoginServlet extends HttpServlet {
+public class SessionPropertiesServlet extends HttpServlet {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
+	
 
-    @Inject
-    public LoginServlet() {
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.sendRedirect("https://localhost:8000");
-    }
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.setContentType("application/json");
+		resp.getWriter().write("{\"maxInactiveInterval\": " + req.getSession().getMaxInactiveInterval() + "}");
+	}
+	
 }

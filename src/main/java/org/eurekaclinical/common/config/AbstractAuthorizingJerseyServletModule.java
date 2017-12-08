@@ -36,8 +36,8 @@ import org.eurekaclinical.standardapis.props.CasJerseyEurekaClinicalProperties;
 public abstract class AbstractAuthorizingJerseyServletModule extends AbstractJerseyServletModule {
 
     protected AbstractAuthorizingJerseyServletModule(CasJerseyEurekaClinicalProperties inProperties,
-            String inPackageNames) {
-        super(inProperties, inPackageNames);
+            String inPackageNames, boolean inDoesProxy) {
+        super(inProperties, inPackageNames, inDoesProxy);
     }
 
     @Override
