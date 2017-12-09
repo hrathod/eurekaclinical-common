@@ -58,69 +58,7 @@ public class LogoutServlet extends HttpServlet {
          * the button bar will think we're still logged in.
          */
         StringBuilder buf = new StringBuilder();
-        String casLogoutUrl = webappProperties.getCasLogoutUrl();
-        buf.append(casLogoutUrl);
-        String awaitingActivation = req.getParameter("awaitingActivation");
-        boolean aaEmpty = awaitingActivation == null || awaitingActivation.length() == 0;
-        if (!aaEmpty && toBooleanObject(awaitingActivation) == null) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-        String notRegistered = req.getParameter("notRegistered");
-        boolean nrEmpty = notRegistered == null || notRegistered.length() == 0;
-        if (!nrEmpty && toBooleanObject(notRegistered) == null) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-        if (!aaEmpty || !nrEmpty) {
-            buf.append('?');
-        }
-        if (!aaEmpty) {
-            buf.append("awaitingActivation=").append(awaitingActivation);
-        }
-        if (!aaEmpty && !nrEmpty) {
-            buf.append('&');
-        }
-        if (!nrEmpty) {
-            buf.append("notRegistered=").append(notRegistered);
-        }
-        log("URL IS " + buf.toString());
-        resp.sendRedirect(buf.toString());
+        resp.sendRedirect(webappProperties.getCasLogoutUrl());
     }
-    
-    /*
-     * Local implementation of Apache Commons BooleanUtils.toBooleanObject.
-     */
 
-    private static final String[] TRUTHY_STRINGS = {
-        "true",
-        "on",
-        "y",
-        "t",
-        "yes"
-    };
-
-    private static final String[] FALSY_STRINGS = {
-        "false",
-        "off",
-        "n",
-        "f",
-        "no"
-    };
-
-    private static Boolean toBooleanObject(String str) {
-        if (str != null) {
-            for (String truthyString : TRUTHY_STRINGS) {
-                if (str.equalsIgnoreCase(truthyString)) {
-                    return Boolean.TRUE;
-                }
-            }
-            for (String falsyString : FALSY_STRINGS) {
-                if (str.equalsIgnoreCase(falsyString)) {
-                    return Boolean.FALSE;
-                }
-            }
-        }
-        return null;
-    }
 }

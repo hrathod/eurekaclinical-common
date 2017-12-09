@@ -51,5 +51,6 @@ public class WebappServletModule extends AbstractAuthorizingServletModule {
         serveGetSession();
         serveDestroySession();
         serveGetSessionProperties();
+        serveLogout();
     }
 }

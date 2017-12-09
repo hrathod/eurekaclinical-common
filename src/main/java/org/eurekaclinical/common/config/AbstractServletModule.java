@@ -32,6 +32,7 @@ import org.eurekaclinical.common.filter.HasAuthenticatedSessionFilter;
 import org.eurekaclinical.common.filter.InvalidateSessionFilter;
 import org.eurekaclinical.common.servlet.DestroySessionServlet;
 import org.eurekaclinical.common.servlet.LoginServlet;
+import org.eurekaclinical.common.servlet.LogoutServlet;
 import org.eurekaclinical.common.servlet.PostMessageLoginServlet;
 import org.eurekaclinical.common.servlet.ProxyServlet;
 import org.eurekaclinical.common.servlet.SessionPropertiesServlet;
@@ -139,6 +140,13 @@ public abstract class AbstractServletModule extends ServletModule {
      */
     protected void serveDestroySession() {
         serve("/destroy-session").with(DestroySessionServlet.class);  
+    }
+    
+    /**
+     * Serves <code>/logout</code>.
+     */
+    protected void serveLogout() {
+        serve("/logout").with(LogoutServlet.class);  
     }
     
     /**
