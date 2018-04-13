@@ -877,6 +877,34 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             this.readLock.unlock();
         }
     }
+    
+    /**
+     * Passes a new resource, form or other POST body to a proxied server.
+     *
+     * @param path the path to the resource. Cannot be <code>null</code>.
+     * @param body the contents of the POST body. Cannot be
+     * <code>null</code>.
+     * @param parameterMap query parameters. May be <code>null</code>.
+     * @param headers any request headers to add. May be <code>null</code>.
+     *
+     * @return ClientResponse the proxied server's response information.
+     *
+     * @throws ClientException if the proxied server responds with an "error"
+     * status code, which is dependent on the server being called.
+     * @see #getResourceUrl() for the URL of the proxied server.
+     */
+    protected ClientResponse doPostForProxy(String path, String body, MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers) throws ClientException {
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.POST, parameterMap).getRequestBuilder();
+            copyHeaders(headers, requestBuilder);
+            return requestBuilder.post(ClientResponse.class, body);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
+        } finally {
+            this.readLock.unlock();
+        }
+    }
 
     /**
      * Passes a resource update to a proxied server.
@@ -899,6 +927,34 @@ public abstract class EurekaClinicalClient implements AutoCloseable {
             WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.PUT, parameterMap).getRequestBuilder();
             copyHeaders(headers, requestBuilder);
             return requestBuilder.put(ClientResponse.class, inputStream);
+        } catch (ClientHandlerException ex) {
+            throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
+        } finally {
+            this.readLock.unlock();
+        }
+    }
+    
+    /**
+     * Passes a resource update to a proxied server.
+     *
+     * @param path the path to the resource. Cannot be <code>null</code>.
+     * @param contents the contents of the update. Cannot be
+     * <code>null</code>.
+     * @param parameterMap query parameters. May be <code>null</code>.
+     * @param headers any request headers to add.
+     *
+     * @return ClientResponse the proxied server's response information.
+     *
+     * @throws ClientException if the proxied server responds with an "error"
+     * status code, which is dependent on the server being called.
+     * @see #getResourceUrl() for the URL of the proxied server.
+     */
+    protected ClientResponse doPutForProxy(String path, String contents, MultivaluedMap<String, String> parameterMap, MultivaluedMap<String, String> headers) throws ClientException {
+        this.readLock.lock();
+        try {
+            WebResource.Builder requestBuilder = getResourceWrapper().rewritten(path, HttpMethod.PUT, parameterMap).getRequestBuilder();
+            copyHeaders(headers, requestBuilder);
+            return requestBuilder.put(ClientResponse.class, contents);
         } catch (ClientHandlerException ex) {
             throw new ClientException(ClientResponse.Status.INTERNAL_SERVER_ERROR, ex.getMessage());
         } finally {
