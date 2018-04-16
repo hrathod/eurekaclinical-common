@@ -22,7 +22,10 @@ package org.eurekaclinical.common.comm.clients;
 
 import com.sun.jersey.api.client.GenericType;
 import java.util.List;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.ContextResolver;
+
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.eurekaclinical.common.comm.Role;
 import org.eurekaclinical.common.comm.User;
@@ -45,31 +48,97 @@ public abstract class AuthorizingEurekaClinicalClient extends EurekaClinicalClie
     }
     
     public List<? extends User> getUsers() throws ClientException {
+        return getUsers(null);
+    }
+
+    public List<? extends User> getUsers(String authToken) throws ClientException {
         final String path = "/api/protected/users";
-        return doGet(path, UserList);
+        MultivaluedMapImpl headers = null;
+        if (authToken != null) {
+            String key = "Authorization";
+            String value = "BEARER " + authToken;
+            headers = new MultivaluedMapImpl();
+            headers.putSingle(key, value);
+        }
+        return doGet(path, UserList, headers);
     }
 
     public User getMe() throws ClientException {
+        return getMe(null);
+    }
+
+    public User getMe(String authToken) throws ClientException {
         String path = "/api/protected/users/me";
-        return doGet(path, User.class);
+        MultivaluedMapImpl headers = null;
+        if (authToken != null) {
+            String key = "Authorization";
+            String value = "BEARER " + authToken;
+            headers = new MultivaluedMapImpl();
+            headers.putSingle(key, value);
+        }
+        return doGet(path, User.class, headers);
     }
 
     public User getUserById(Long inUserId) throws ClientException {
+        return getUserById(inUserId, null);
+    }
+
+    public User getUserById(Long inUserId, String authToken) throws ClientException {
         final String path = "/api/protected/users/" + inUserId;
-        return doGet(path, User.class);
+        MultivaluedMapImpl headers = null;
+        if (authToken != null) {
+            String key = "Authorization";
+            String value = "BEARER " + authToken;
+            headers = new MultivaluedMapImpl();
+            headers.putSingle(key, value);
+        }
+        return doGet(path, User.class, headers);
     }
 
     public List<Role> getRoles() throws ClientException {
+        return getRoles(null);
+    }
+
+    public List<Role> getRoles(String authToken) throws ClientException {
         final String path = "/api/protected/roles";
-        return doGet(path, RoleList);
+        MultivaluedMapImpl headers = null;
+        if (authToken != null) {
+            String key = "Authorization";
+            String value = "BEARER " + authToken;
+            headers = new MultivaluedMapImpl();
+            headers.putSingle(key, value);
+        }
+        return doGet(path, RoleList, headers);
     }
 
     public Role getRole(Long inRoleId) throws ClientException {
+        return getRole(null);
+    }
+
+    public Role getRole(Long inRoleId, String authToken) throws ClientException {
         final String path = "/api/protected/roles/" + inRoleId;
-        return doGet(path, Role.class);
+        MultivaluedMapImpl headers = null;
+        if (authToken != null) {
+            String key = "Authorization";
+            String value = "BEARER " + authToken;
+            headers = new MultivaluedMapImpl();
+            headers.putSingle(key, value);
+        }
+        return doGet(path, Role.class, headers);
     }
 
     public Role getRoleByName(String name) throws ClientException {
-        return doGet("/api/protected/roles/byname/" + name, Role.class);
+        return getRoleByName(name, null);
+    }
+
+    public Role getRoleByName(String name, String authToken) throws ClientException {
+        MultivaluedMapImpl headers = null;
+        if (authToken != null) {
+            String key = "Authorization";
+            String value = "BEARER " + authToken;
+            headers = new MultivaluedMapImpl();
+            headers.putSingle(key, value);
+        }
+        return doGet("/api/protected/roles/byname/" + name, Role.class, headers);
     }
 }
