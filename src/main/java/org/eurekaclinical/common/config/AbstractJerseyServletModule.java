@@ -23,6 +23,11 @@ import com.google.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eurekaclinical.common.filter.AutoAuthorizationFilter;
+import org.eurekaclinical.common.filter.ConditionalCasAuthenticationFilter;
+import org.eurekaclinical.common.filter.ConditionalHttpServletRequestWrapperFilter;
+import org.eurekaclinical.common.filter.HasAuthenticatedSessionFilter;
+import org.eurekaclinical.common.filter.JwtFilter;
 import org.jasig.cas.client.authentication.AuthenticationFilter;
 import org.jasig.cas.client.util.AssertionThreadLocalFilter;
 import org.jasig.cas.client.util.HttpServletRequestWrapperFilter;
@@ -38,8 +43,6 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
-import org.eurekaclinical.common.filter.AutoAuthorizationFilter;
-import org.eurekaclinical.common.filter.HasAuthenticatedSessionFilter;
 import org.eurekaclinical.standardapis.props.CasJerseyEurekaClinicalProperties;
 
 /**
@@ -114,15 +117,14 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
         bind(AuthenticationFilter.class).in(Singleton.class);
         Map<String, String> params = this.servletModuleSupport
                 .getCasAuthenticationFilterInitParams();
-        filter(PROTECTED_API_PATH).through(AuthenticationFilter.class,
-                params);
+        filter(PROTECTED_API_PATH).through(ConditionalCasAuthenticationFilter.class, params);
     }
 
     private void setupCasServletRequestWrapperFilter() {
         bind(HttpServletRequestWrapperFilter.class).in(Singleton.class);
         Map<String, String> params = this.servletModuleSupport
                 .getServletRequestWrapperFilterInitParams();
-        filter(UNPROTECTED_PATH).through(HttpServletRequestWrapperFilter.class, params);
+        filter(UNPROTECTED_PATH).through(ConditionalHttpServletRequestWrapperFilter.class, params);
     }
 
     private void setupCasThreadLocalAssertionFilter() {
@@ -155,12 +157,19 @@ public abstract class AbstractJerseyServletModule extends JerseyServletModule {
         }
     }
 
+    protected void setupJwtFilter () {
+        Map<String, String> params = new HashMap<>();
+        params.put(JwtFilter.SECRET_PARAM_NAME, this.properties.getJwtSecret());
+        filter(PROTECTED_API_PATH).through(JwtFilter.class, params);
+    }
+
     @Override
     protected void configureServlets() {
         super.configureServlets();
         /*
-         * CAS filters must go before other filters.
+         * JWT and CAS filters must go before other filters.
          */
+        this.setupJwtFilter();
         this.setupCasFilters();
         this.setupAutoAuthorization();
         this.setupFilters();

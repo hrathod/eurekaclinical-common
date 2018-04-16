@@ -33,8 +33,12 @@ This project includes:
   HttpClient under Apache License
   HttpCore under Apache License
   Jackson under The Apache Software License, Version 2.0
+  Jackson-annotations under The Apache Software License, Version 2.0
+  Jackson-core under The Apache Software License, Version 2.0
+  jackson-databind under The Apache Software License, Version 2.0
   Jasig CAS Client for Java - Core under Apache License Version 2.0
   Java Annotation Indexer under Apache License, Version 2.0
+  java jwt under The MIT License (MIT)
   Java Persistence API, Version 2.1 under Eclipse Public License (EPL), Version 1.0 or Eclipse Distribution License (EDL), Version 1.0
   Java Servlet API under CDDL + GPLv2 with classpath exception
   Java Transaction API under Common Development and Distribution License, Version 1.0
