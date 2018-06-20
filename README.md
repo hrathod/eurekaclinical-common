@@ -4,8 +4,8 @@
 ## What does it do?
 It implements a custom web application development framework that uses best of breed components:
 * Google Guice 3.0 (dependency injection)
-* Jersey 1.17.1 (REST)
-* Hibernate 5.0.6.Final (object-relational mapping)
+* Jersey 1.19.4 (REST)
+* Hibernate 5.0.12.Final (object-relational mapping)
 * Tomcat 7
 
 It supports calling these components through the standard APIs specified in and provided by the [Eureka! Clinical Web Application Standard APIs project](https://github.com/eurekaclinical/eurekaclinical-standard-apis).
@@ -19,14 +19,19 @@ It extends the functionality in the [Eureka! Clinical Web Application Standard A
 
 See [Structure of Eureka! Clinical microservices](https://github.com/eurekaclinical/dev-wiki/wiki/Structure-of-Eureka%21-Clinical-microservices) for how to use the framework. The goal for the version 2.0 release is for all Eureka! Clinical web application components to use this framework.
 
-## Version 2.0 development series
 Latest release: [![Latest release](https://maven-badges.herokuapp.com/maven-central/org.eurekaclinical/eurekaclinical-common/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.eurekaclinical/eurekaclinical-common)
 
+## Version 3.0
+* Removed RolesFromServiceFilter because Eureka! Clinical webapps no longer need role information.
+* Removed WebappServletModule, which was superceded by APIGatewayServletModule.
+* Removed AbstractAuthorizingServletModule and AbstractAuthorizingJerseyServletModule, which are unused.
+* Add POST and PUT calls for passing a string into an Eureka! Clinical API gateway proxy.
+* Require version 2.1 or greater of eurekaclinical-standard-apis.
+
+## Version 2.0
 The goal of the 2.0 series is to have sufficient functionality for all Eureka! Clinical web applications to depend on eurekaclinical-common.
 
-## Version history
-
-### Version 1.0
+## Version 1.0
 Implemented partial functionality, and only some parts of Eureka! Clinical used it.
 
 ## Build requirements
@@ -51,7 +56,7 @@ The project uses the maven build tool. Typically, you build it by invoking `mvn 
 
 ## Developer documentation
 * [Javadoc for latest development release](http://javadoc.io/doc/org.eurekaclinical/eurekaclinical-common) [![Javadocs](http://javadoc.io/badge/org.eurekaclinical/eurekaclinical-common.svg)](http://javadoc.io/doc/org.eurekaclinical/eurekaclinical-common)
-* [Javadoc for version 1.0](http://javadoc.io/doc/org.eurekaclinical/eurekaclinical-common/1.0)
+* [Javadoc for version 3.0](http://javadoc.io/doc/org.eurekaclinical/eurekaclinical-common/3.0)
 
 ## Getting help
 Feel free to contact us at help@eurekaclinical.org.
